@@ -352,6 +352,10 @@
    ================================================================== */
 const CORREO = "ramitachocolates@gmail.com";
 
+/* 1b) PLANILLA de pedidos (Google Sheets). Pega aquí la URL de la
+       implementación de Apps Script (termina en /exec). "" = no anotar. */
+const PLANILLA = "";
+
 /* 2) INSTAGRAM (opcional): pon el enlace completo o deja "" para ocultarlo */
 const INSTAGRAM = "";
 
@@ -523,7 +527,13 @@ function calcular(){
 
 function aviso(t){ const el=$("#toast"); el.textContent=t; el.classList.add("ver"); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("ver"),1600); }
 const abrir = () => { document.body.style.overflow="hidden"; $("#carro").classList.add("abierto"); };
-const cerrar = () => { document.body.style.overflow=""; $("#carro").classList.remove("abierto"); };
+const cerrar = () => {
+  document.body.style.overflow=""; $("#carro").classList.remove("abierto");
+  // Después de «Gracias», al cerrar el panel queda listo para un pedido nuevo
+  if (!$("#pasoListo").classList.contains("oculto")) setTimeout(() => {
+    $("#pasoListo").classList.add("oculto"); $("#pasoPedido").classList.remove("oculto");
+  }, 400);
+};
 $("#abrirCarro").onclick = abrir; $("#cerrarCarro").onclick = cerrar; $("#velo").onclick = cerrar;
 document.addEventListener("keydown", e => e.key === "Escape" && cerrar());
 
@@ -555,7 +565,23 @@ $("#form").onsubmit = async e => {
       body: JSON.stringify({
         _subject: `Nuevo pedido ramita — ${d.nombre} — ${peso(total)}`,
         _template: "box", _replyto: d.correo, _captcha: "false",
-        Nombre: d.nombre, Correo: d.correo, Teléfono: d.telefono || "—",
+        // Correo automático para el cliente (FormSubmit lo manda al campo «email»)
+        _autoresponse:
+`¡Hola ${d.nombre.trim().split(" ")[0]}! Gracias por tu pedido en ramita.
+
+Tu pedido:
+${detalle}
+
+${entregaTxt}
+Día: ${d.dia}
+Trufas: ${peso(sub)} · ${d.entrega === "Despacho" ? "Despacho: " + (envio ? peso(envio) : "gratis") : "Retiro sin costo"}
+Total: ${peso(total)}
+
+Todavía no tienes que pagar nada. Te escribiremos pronto para confirmar disponibilidad y horario, y te mandaremos un link para pagar con tarjeta (o los datos para transferencia, si prefieres).
+
+Con cariño,
+ramita chocolates`,
+        Nombre: d.nombre, email: d.correo, Teléfono: d.telefono || "—",
         Entrega: entregaTxt, Día: d.dia, Pedido: detalle,
         Trufas: peso(sub), [d.entrega === "Despacho" ? "Despacho" : "Retiro"]: envio ? peso(envio) : (d.entrega === "Despacho" ? "Gratis" : "Sin costo"),
         Total: peso(total), Comentario: d.comentario || "—"
@@ -563,6 +589,17 @@ $("#form").onsubmit = async e => {
     });
     const j = await r.json().catch(() => ({}));
     if (!r.ok || j.success === "false" || j.success === false) throw new Error(j.message || "error");
+    if (PLANILLA) fetch(PLANILLA, {
+      method:"POST", mode:"no-cors", keepalive:true,
+      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        nombre: d.nombre, correo: d.correo, telefono: d.telefono || "",
+        entrega: d.entrega, lugar: z.nombre, direccion: d.entrega === "Despacho" ? d.direccion : "",
+        dia: d.dia, comentario: d.comentario || "", detalle, trufas: sub, despacho: envio, total,
+        items: carro.map(x => ({ formato: PRODUCTOS.find(p => p.id === x.id).nombre, sabor: x.sabor || "",
+          cant: x.cant, precio: PRODUCTOS.find(p => p.id === x.id).precio }))
+      })
+    }).catch(() => {});
     carro = []; guardar(); f.reset(); llenarLugares(); pintar();
     $("#pasoPedido").classList.add("oculto"); $("#pasoListo").classList.remove("oculto");
   } catch(ex) {
