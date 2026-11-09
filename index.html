@@ -558,7 +558,10 @@ $("#form").onsubmit = async e => {
     carro = []; guardar(); f.reset(); llenarLugares(); pintar();
     $("#pasoPedido").classList.add("oculto"); $("#pasoListo").classList.remove("oculto");
   } catch(ex) {
-    err("No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.");
+    const msg = String(ex && ex.message || "");
+    err(/activ/i.test(msg)
+      ? `El formulario de pedidos aún no está activado. Mientras tanto, escríbenos a ${CORREO} y te ayudamos.`
+      : `No se pudo enviar el pedido. Inténtalo de nuevo o escríbenos a ${CORREO}.`);
   } finally {
     $("#enviar").disabled = false; $("#enviar").textContent = "Enviar pedido";
   }
