@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ramita · chocolates</title>
+<meta name="description" content="Trufas de chocolate hechas a mano. Elige tu bolsa y tu sabor y haz tu pedido.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Lo que normalmente se cambia (correo, precios, textos) está en el <script> al final. */
+  :root{
+    --tinta:#2a1a12; --suave:#7a675b; --cobre:#8a4b2e;
+    --fondo:#f7f2ea; --papel:#fbf8f3; --linea:#e3d9cb; --oscuro:#2a1a12;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--fondo);color:var(--tinta);font-family:'Instrument Sans',system-ui,sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  img{max-width:100%;display:block}
+  a{color:inherit}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 32px}
+  .serif{font-family:'DM Serif Display',Georgia,serif;font-weight:400;letter-spacing:-.005em}
+  .ceja{display:block;font-size:11px;letter-spacing:.3em;text-transform:uppercase;font-weight:500;color:var(--suave)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font:500 12px 'Instrument Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;padding:16px 28px;border:1px solid var(--tinta);background:var(--tinta);color:var(--fondo);text-decoration:none;cursor:pointer;transition:background .2s,color .2s}
+  .btn:hover{background:transparent;color:var(--tinta)}
+  .btn.claro{background:transparent;color:var(--tinta)}
+  .btn.claro:hover{background:var(--tinta);color:var(--fondo)}
+
+  /* Encabezado */
+  header{position:sticky;top:0;z-index:20;background:rgba(247,242,234,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--linea)}
+  header .wrap{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:76px}
+  nav{display:flex;gap:34px}
+  nav a{text-decoration:none;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--suave)}
+  nav a:hover{color:var(--tinta)}
+  .logo{text-decoration:none;text-align:center;line-height:1}
+  .logo b{font-family:'DM Serif Display',serif;font-weight:400;font-size:30px;display:block}
+  .logo small{display:block;margin-top:4px;font-size:9px;letter-spacing:.42em;font-weight:500;padding-left:.42em}
+  .btn-carro{justify-self:end;background:none;border:0;cursor:pointer;font:500 11px 'Instrument Sans',sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--tinta);display:flex;align-items:center;gap:10px;padding:8px 0}
+  .btn-carro span{border:1px solid var(--tinta);min-width:24px;height:24px;display:inline-grid;place-items:center;font-size:11px;letter-spacing:0;padding:0 6px}
+
+  /* Portada */
+  .portada{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;padding-top:72px;padding-bottom:96px}
+  .portada h1{font-size:clamp(46px,6vw,84px);line-height:.98;margin:22px 0 26px}
+  .portada h1 em{font-style:italic;color:var(--cobre)}
+  .portada p{max-width:420px;color:var(--suave);margin:0 0 38px;font-size:17px}
+  .acciones{display:flex;gap:14px;flex-wrap:wrap}
+  .portada figure{margin:0;position:relative}
+  .portada figure img{width:100%;aspect-ratio:4/5;object-fit:cover}
+  .portada figcaption{position:absolute;left:-1px;bottom:28px;background:var(--fondo);padding:14px 20px 14px 0;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--suave)}
+
+  .sellos{border-top:1px solid var(--linea);border-bottom:1px solid var(--linea)}
+  .sellos .wrap{display:grid;grid-template-columns:repeat(3,1fr)}
+  .sellos div{padding:26px 10px;text-align:center;font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--suave)}
+  .sellos div + div{border-left:1px solid var(--linea)}
+  .sellos b{display:block;font-family:'DM Serif Display',serif;font-weight:400;font-size:22px;letter-spacing:0;text-transform:none;color:var(--tinta);margin-bottom:2px}
+
+  /* Secciones */
+  section.bloque{padding-top:110px}
+  .cabeza{display:flex;justify-content:space-between;align-items:end;gap:30px;margin-bottom:48px;padding-bottom:22px;border-bottom:1px solid var(--linea)}
+  .cabeza h2{font-size:clamp(36px,4.4vw,56px);line-height:1;margin:12px 0 0}
+  .cabeza p{margin:0;max-width:340px;color:var(--suave);font-size:15px;text-align:right}
+
+  /* Bolsas */
+  .bolsas{display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
+  .bolsa img{width:100%;aspect-ratio:4/5;object-fit:cover;background:#ece4d8}
+  .bolsa .fila{display:flex;justify-content:space-between;align-items:baseline;margin-top:22px}
+  .bolsa h3{font-size:34px;margin:0;line-height:1}
+  .bolsa h3 small{font-family:'Instrument Sans',sans-serif;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--suave);margin-left:8px}
+  .precio{font-size:18px;font-weight:500;letter-spacing:.02em}
+  .bolsa .nota-b{margin:6px 0 18px;color:var(--suave);font-size:14px}
+  .elige{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--suave);margin-bottom:10px}
+  .sabor{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px}
+  .sabor input{position:absolute;opacity:0;pointer-events:none}
+  .sabor label{border:1px solid var(--linea);padding:10px 8px;text-align:center;font-size:13px;cursor:pointer;transition:border-color .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+  .sabor label i{width:8px;height:8px;display:inline-block}
+  .sabor label:hover{border-color:var(--suave)}
+  .sabor input:checked + label{border-color:var(--tinta);box-shadow:inset 0 0 0 1px var(--tinta)}
+  .sabor input:focus-visible + label{outline:2px solid var(--cobre);outline-offset:2px}
+  .bolsa .btn{width:100%}
+
+  /* Sabores */
+  .sabores{display:grid;grid-template-columns:repeat(4,1fr);gap:32px}
+  .sab img{width:100%;aspect-ratio:4/5;object-fit:cover}
+  .sab .marca{display:flex;align-items:center;gap:10px;margin-top:20px}
+  .sab .marca i{width:10px;height:10px;display:inline-block}
+  .sab h3{font-size:30px;margin:6px 0 8px;line-height:1}
+  .sab p{margin:0;color:var(--suave);font-size:14px;line-height:1.55}
+  .sab .av{margin-top:8px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--cobre)}
+
+  /* Entregas */
+  .entregas{display:grid;grid-template-columns:1fr 1fr;gap:56px}
+  .entregas h3{font-size:30px;margin:0 0 6px;line-height:1}
+  .entregas .sub{margin:0 0 22px;color:var(--suave);font-size:14px}
+  .tabla{border-top:1px solid var(--linea)}
+  .tabla div{display:grid;grid-template-columns:1fr auto;gap:4px 16px;padding:16px 0;border-bottom:1px solid var(--linea)}
+  .tabla b{font-weight:500}
+  .tabla span{color:var(--suave);font-size:14px;grid-column:1}
+  .tabla em{font-style:normal;font-weight:500;grid-column:2;grid-row:1}
+  .gratis{margin-top:22px;padding:16px 18px;border:1px solid var(--tinta);font-size:13px;letter-spacing:.06em}
+  .gratis b{font-weight:600}
+
+  /* Cómo pedir */
+  .pasos-sec{margin-top:120px;background:var(--oscuro);color:#f3ebe0;padding:100px 0}
+  .pasos-sec .ceja{color:#b9a796}
+  .pasos-sec h2{font-size:clamp(36px,4.4vw,56px);margin:12px 0 56px;line-height:1}
+  .pasos{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+  .paso{padding:0 36px;border-left:1px solid rgba(243,235,224,.18)}
+  .paso:first-child{padding-left:0;border-left:0}
+  .paso b{font-family:'DM Serif Display',serif;font-weight:400;font-size:64px;line-height:1;display:block;color:#d9c3a5}
+  .paso h3{font-size:12px;letter-spacing:.26em;text-transform:uppercase;font-weight:500;margin:22px 0 10px}
+  .paso p{margin:0;color:#c8b8a8;font-size:15px}
+
+  footer{padding-top:60px;padding-bottom:48px;text-align:center}
+  footer .logo{display:inline-block;margin-bottom:18px}
+  footer p{margin:0;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--suave)}
+  footer a{text-decoration:none;border-bottom:1px solid var(--linea)}
+
+  /* Pedido (panel) */
+  .velo{position:fixed;inset:0;background:rgba(42,26,18,.4);opacity:0;pointer-events:none;transition:.3s;z-index:40}
+  .panel{position:fixed;top:0;right:0;height:100%;width:min(460px,100%);background:var(--papel);z-index:50;transform:translateX(100%);transition:transform .35s cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column}
+  .abierto .velo{opacity:1;pointer-events:auto}
+  .abierto .panel{transform:none}
+  .panel-top{display:flex;justify-content:space-between;align-items:center;padding:26px 30px;border-bottom:1px solid var(--linea)}
+  .panel-top h2{margin:0;font-size:30px}
+  .cerrar{background:none;border:0;font-size:30px;line-height:1;cursor:pointer;color:var(--tinta);font-weight:300}
+  .panel-cuerpo{overflow:auto;padding:10px 30px 30px;flex:1}
+  select{width:100%;padding:12px 22px 12px 0;border:0;border-bottom:1px solid var(--linea);border-radius:0;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%237a675b'/%3E%3C/svg%3E") no-repeat right 4px center;-webkit-appearance:none;appearance:none;font:16px 'Instrument Sans',sans-serif;color:var(--tinta);letter-spacing:0;text-transform:none;cursor:pointer}
+  select:focus{outline:0;border-bottom-color:var(--tinta)}
+  .resumen{padding:18px 0 4px}
+  .resumen div{display:flex;justify-content:space-between;font-size:14px;color:var(--suave);padding:3px 0}
+  .resumen .falta{font-size:13px;color:var(--cobre);padding-top:6px}
+  .item{display:grid;grid-template-columns:64px 1fr auto;gap:16px;align-items:center;padding:18px 0;border-bottom:1px solid var(--linea)}
+  .item img{width:64px;height:80px;object-fit:cover}
+  .item b{display:block;font-family:'DM Serif Display',serif;font-weight:400;font-size:20px;line-height:1.1}
+  .item small{color:var(--suave);font-size:13px}
+  .cant{display:flex;align-items:center;border:1px solid var(--linea)}
+  .cant button{width:30px;height:32px;border:0;background:none;cursor:pointer;font-size:15px;color:var(--tinta)}
+  .cant span{min-width:20px;text-align:center;font-size:14px}
+  .total{display:flex;justify-content:space-between;align-items:baseline;padding:22px 0 8px}
+  .total span:first-child{font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--suave)}
+  .total span:last-child{font-size:22px;font-weight:500}
+  .vacio{color:var(--suave);text-align:center;padding:60px 0;font-size:15px}
+  form{display:grid;gap:16px;margin-top:18px}
+  form h3{margin:14px 0 0;font-size:24px}
+  label.campo,.campo{display:grid;gap:6px;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--suave)}
+  input[type=text],input[type=email],input[type=tel],input[type=date],textarea{width:100%;padding:12px 0;border:0;border-bottom:1px solid var(--linea);background:transparent;font:16px 'Instrument Sans',sans-serif;color:var(--tinta);letter-spacing:0;text-transform:none;border-radius:0}
+  input:focus,textarea:focus{outline:0;border-bottom-color:var(--tinta)}
+  textarea{min-height:64px;resize:vertical}
+  .opciones{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+  .opciones input{position:absolute;opacity:0;pointer-events:none}
+  .opciones label{border:1px solid var(--linea);padding:12px;text-align:center;cursor:pointer;font-size:13px;letter-spacing:.04em;text-transform:none;color:var(--tinta)}
+  .opciones input:checked + label{border-color:var(--tinta);box-shadow:inset 0 0 0 1px var(--tinta)}
+  .enviar{margin-top:8px;width:100%}
+  .enviar:disabled{opacity:.6;cursor:wait}
+  .nota{font-size:13px;color:var(--suave);margin:0;line-height:1.5}
+  .error{color:#9b2a1c;font-size:14px;margin:0}
+  .listo{text-align:center;padding:70px 10px}
+  .listo .serif{font-size:42px;margin:0 0 12px}
+  .listo p{color:var(--suave)}
+  .oculto{display:none!important}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:var(--tinta);color:var(--fondo);padding:14px 24px;font-size:11px;letter-spacing:.24em;text-transform:uppercase;opacity:0;transition:.3s;z-index:60;pointer-events:none}
+  .toast.ver{opacity:1;transform:translate(-50%,0)}
+
+  @media (max-width:980px){
+    .sabores{grid-template-columns:repeat(2,1fr)}
+    .bolsas{gap:28px}
+  }
+  @media (max-width:820px){
+    .wrap{padding:0 20px}
+    nav{display:none}
+    header .wrap{grid-template-columns:1fr auto;height:66px}
+    .logo{text-align:left}
+    .logo b{font-size:26px}
+    .portada{grid-template-columns:1fr;gap:36px;padding-top:36px;padding-bottom:64px}
+    .portada p{font-size:16px}
+    .bolsas{grid-template-columns:1fr;gap:56px}
+    .cabeza{flex-direction:column;align-items:start;gap:12px}
+    .cabeza p{text-align:left}
+    section.bloque{padding-top:80px}
+    .pasos{grid-template-columns:1fr;gap:36px}
+    .entregas{grid-template-columns:1fr;gap:48px}
+    .paso{padding:0;border-left:0}
+    .sellos .wrap{padding:0}
+    .sellos div{padding:20px 6px;font-size:9px;letter-spacing:.18em}
+    .sellos b{font-size:18px}
+  }
+  @media (max-width:520px){
+    .sabores{grid-template-columns:1fr 1fr;gap:20px}
+    .sab h3{font-size:24px}
+    .sab p{font-size:13px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <nav aria-label="Secciones">
+      <a href="#bolsas">Bolsas</a>
+      <a href="#sabores">Sabores</a>
+      <a href="#entregas">Entregas</a>
+      <a href="#como">Cómo pedir</a>
+    </nav>
+    <a class="logo" href="#" aria-label="ramita chocolates"><b>ramita</b><small>CHOCOLATES</small></a>
+    <button class="btn-carro" id="abrirCarro">Pedido <span id="contador">0</span></button>
+  </div>
+</header>
+
+<main>
+  <section class="wrap portada">
+    <div>
+      <span class="ceja">Trufas hechas a mano</span>
+      <h1 class="serif">Trufas para <em>no</em> compartir.</h1>
+      <p>Ganache suave, cubierta de chocolate y cacao. Tres sabores en bolsas de 4, 6 o 9: elige la tuya y te confirmamos el pedido.</p>
+      <div class="acciones">
+        <a class="btn" href="#bolsas">Ver bolsas</a>
+        <a class="btn claro" href="#sabores">Los sabores</a>
+      </div>
+    </div>
+    <figure>
+      <img src="img/portada.jpg" alt="Trufas ramita de frambuesa, una partida mostrando su centro rosado" fetchpriority="high">
+      <figcaption>Chocolate blanco · frambuesa</figcaption>
+    </figure>
+  </section>
+
+  <div class="sellos">
+    <div class="wrap">
+      <div><b>Hecho a mano</b>en pequeñas tandas</div>
+      <div><b>3 sabores</b>o un mix de todos</div>
+      <div><b>Envío gratis</b>sobre $15.000</div>
+    </div>
+  </div>
+
+  <section class="wrap bloque" id="bolsas">
+    <div class="cabeza">
+      <div><span class="ceja">01 — Precios</span><h2 class="serif">Elige tu bolsa</h2></div>
+      <p>Cada bolsa en un solo sabor, o en mix con partes iguales de los tres (bolsas de 6 y 9).</p>
+    </div>
+    <div class="bolsas" id="catalogo"></div>
+  </section>
+
+  <section class="wrap bloque" id="sabores">
+    <div class="cabeza">
+      <div><span class="ceja">02 — La carta</span><h2 class="serif">Nuestros sabores</h2></div>
+      <p>Conservar en lugar fresco y seco, entre 15 y 18 °C.</p>
+    </div>
+    <div class="sabores" id="listaSabores"></div>
+  </section>
+
+  <section class="wrap bloque" id="entregas">
+    <div class="cabeza">
+      <div><span class="ceja">03 — Entregas</span><h2 class="serif">Despacho y retiro</h2></div>
+      <p>Pedidos con al menos 24 horas de anticipación. Eliges el día al hacer tu pedido.</p>
+    </div>
+    <div class="entregas">
+      <div>
+        <h3 class="serif">Despacho</h3>
+        <p class="sub">A tu puerta, en estas comunas.</p>
+        <div class="tabla" id="tablaDespacho"></div>
+        <div class="gratis" id="gratisTxt"></div>
+      </div>
+      <div>
+        <h3 class="serif">Retiro</h3>
+        <p class="sub">Sin costo, coordinado con 24 horas de anticipación.</p>
+        <div class="tabla" id="tablaRetiro"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pasos-sec" id="como">
+    <div class="wrap">
+      <span class="ceja">04 — Cómo pedir</span>
+      <h2 class="serif">Simple y sin apuro</h2>
+      <div class="pasos">
+        <div class="paso"><b>1</b><h3>Elige</h3><p>Escoge tu bolsa y el sabor, y agrégala a tu pedido.</p></div>
+        <div class="paso"><b>2</b><h3>Envía</h3><p>Déjanos tu nombre, tu correo y si prefieres retiro o despacho.</p></div>
+        <div class="paso"><b>3</b><h3>Confirmamos</h3><p>Te escribimos para confirmar y te mandamos un link para pagar con tarjeta (o por transferencia, si prefieres).</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <a class="logo" href="#"><b>ramita</b><small>CHOCOLATES</small></a>
+  <p>Hecho a mano<span id="instaSep"> · <a href="https://instagram.com/" id="insta" target="_blank" rel="noopener">Instagram</a></span></p>
+</footer>
+
+<!-- Carrito y formulario -->
+<div id="carro">
+  <div class="velo" id="velo"></div>
+  <aside class="panel" aria-label="Tu pedido">
+    <div class="panel-top">
+      <h2 class="serif">Tu pedido</h2>
+      <button class="cerrar" id="cerrarCarro" aria-label="Cerrar">×</button>
+    </div>
+    <div class="panel-cuerpo">
+      <div id="pasoPedido">
+        <div id="items"></div>
+        <div class="total" id="totalFila"><span>Subtotal</span><span id="subtotal">$0</span></div>
+        <div class="resumen oculto" id="faltaGratis"><div class="falta" id="faltaTxt"></div></div>
+
+        <form id="form" class="oculto" novalidate>
+          <h3 class="serif">Tus datos</h3>
+          <label class="campo">Nombre<input type="text" name="nombre" required autocomplete="name"></label>
+          <label class="campo">Correo<input type="email" name="correo" required autocomplete="email"></label>
+          <label class="campo">Teléfono (opcional)<input type="tel" name="telefono" autocomplete="tel"></label>
+          <div class="campo">Entrega
+            <div class="opciones">
+              <input type="radio" name="entrega" id="e1" value="Retiro" checked><label for="e1">Retiro</label>
+              <input type="radio" name="entrega" id="e2" value="Despacho"><label for="e2">Despacho</label>
+            </div>
+          </div>
+          <label class="campo"><span id="lugarTit">Lugar de retiro</span><select name="lugar" id="lugar"></select></label>
+          <label class="campo oculto" id="campoDir">Dirección<input type="text" name="direccion" autocomplete="street-address" placeholder="Calle, número, depto. o condominio"></label>
+          <label class="campo">Día de entrega<select name="dia" id="dia"></select></label>
+          <p class="nota" id="notaEntrega"></p>
+          <label class="campo">Comentario (opcional)<textarea name="comentario" placeholder="Ej.: es para regalo, mensaje para la tarjeta…"></textarea></label>
+          <div class="resumen">
+            <div><span>Trufas</span><span id="rSub">$0</span></div>
+            <div><span id="rEnvioTit">Retiro</span><span id="rEnvio">Sin costo</span></div>
+          </div>
+          <div class="total"><span>Total</span><span id="total">$0</span></div>
+          <p class="error oculto" id="error"></p>
+          <button class="btn enviar" type="submit" id="enviar">Enviar pedido</button>
+          <p class="nota">Todavía no pagas nada. Te escribimos para confirmar disponibilidad y entrega, y te mandamos un link para pagar con tarjeta de débito o crédito (o por transferencia, si prefieres).</p>
+        </form>
+      </div>
+
+      <div class="listo oculto" id="pasoListo">
+        <p class="serif">Gracias</p>
+        <p>Recibimos tu pedido. Te escribiremos a tu correo pronto para confirmarlo y mandarte el link de pago.</p>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ==================================================================
+   1) CORREO donde llegan los pedidos.
+      La primera vez que alguien haga un pedido, llegará un correo de
+      FormSubmit pidiendo «Activate»: hay que apretarlo una sola vez.
+   ================================================================== */
+const CORREO = "ramitachocolates@gmail.com";
+
+/* 2) INSTAGRAM (opcional): pon el enlace completo o deja "" para ocultarlo */
+const INSTAGRAM = "";
+
+/* 3) SABORES — color = el del topper de cada sabor */
+const SABORES = [
+  { nombre:"clásica", linea:"Trufa", color:"#6e4a33", foto:"img/sabor_clasica.jpg",
+    texto:"Ganache de chocolate de leche, bañada en chocolate semi amargo y cacao en polvo." },
+  { nombre:"whisky", linea:"Chocolate bitter", color:"#2a3b30", foto:"img/sabor_whisky.jpg",
+    texto:"Ganache de chocolate semi amargo y whisky, bañada en chocolate de leche y azúcar flor.", aviso:"Contiene alcohol" },
+  { nombre:"frambuesa", linea:"Chocolate blanco", color:"#84354a", foto:"img/sabor_frambuesa.jpg",
+    texto:"Ganache de chocolate blanco con frambuesa, cubierta de chocolate semi amargo y cacao en polvo." },
+  { nombre:"mix", linea:"Selección de trufas", color:"#c9a27e", foto:"img/sabor_mix.jpg",
+    texto:"Nuestros tres sabores en una bolsa, para probarlos todos. Partes iguales de cada uno." },
+];
+
+/* 4) BOLSAS — precio en pesos, sin puntos */
+const PRODUCTOS = [
+  { id:"bolsa-4", tipo:"Bolsa", nombre:"4", texto:"Un solo sabor.",
+    sabores:["Clásica","Whisky","Frambuesa"], precio:3990, foto:"img/bolsa_4.jpg" },
+  { id:"bolsa-6", tipo:"Bolsa", nombre:"6", texto:"Un sabor o mix.",
+    sabores:["Clásica","Whisky","Frambuesa","Mix"], precio:5990, foto:"img/bolsa_6.jpg" },
+  { id:"bolsa-9", tipo:"Bolsa", nombre:"9", texto:"Un sabor o mix.",
+    sabores:["Clásica","Whisky","Frambuesa","Mix"], precio:8490, foto:"img/bolsa_9.jpg" },
+];
+
+/* 5) ENTREGAS
+      dias: 0=domingo 1=lunes 2=martes 3=miércoles 4=jueves 5=viernes 6=sábado */
+const ENVIO_GRATIS_DESDE = 15000;
+const DESPACHO = [
+  { id:"chicureo",     nombre:"Chicureo",     precio:2500, dias:[2,4,5,6] },
+  { id:"vitacura",     nombre:"Vitacura",     precio:3000, dias:[1,3] },
+  { id:"lo-barnechea", nombre:"Lo Barnechea", precio:3000, dias:[1,3] },
+  { id:"las-condes",   nombre:"Las Condes",   precio:3000, dias:[1,3] },
+];
+const RETIRO = [
+  { id:"colina",   nombre:"Colina",                     dias:[2,4,5,6] },
+  { id:"el-golf",  nombre:"Las Condes · Barrio El Golf", dias:[1,3,4] },
+  { id:"vitacura", nombre:"Vitacura",                    dias:[1,3] },
+];
+/* ================================================================== */
+
+const DIAS = ["domingos","lunes","martes","miércoles","jueves","viernes","sábados"];
+const listaDias = ds => { const n = ds.map(d => DIAS[d]); return n.length > 1 ? n.slice(0,-1).join(", ") + " y " + n.at(-1) : n[0]; };
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+const $ = s => document.querySelector(s);
+const peso = n => "$" + n.toLocaleString("es-CL");
+const colorDe = s => (SABORES.find(x => x.nombre.toLowerCase() === s.toLowerCase().normalize("NFC")) || {}).color || "#999";
+let carro = [];
+try { carro = JSON.parse(localStorage.getItem("ramita-carro")) || []; } catch(e) {}
+carro = carro.filter(x => PRODUCTOS.some(p => p.id === x.id));
+const guardar = () => { try { localStorage.setItem("ramita-carro", JSON.stringify(carro)); } catch(e) {} };
+
+if (INSTAGRAM) $("#insta").href = INSTAGRAM; else $("#instaSep").remove();
+
+// Bolsas
+$("#catalogo").innerHTML = PRODUCTOS.map(p => `
+  <article class="bolsa">
+    <img src="${p.foto}" alt="Bolsa de ${p.nombre} trufas ramita" loading="lazy">
+    <div class="fila"><h3 class="serif">${p.nombre}<small>trufas</small></h3><span class="precio">${peso(p.precio)}</span></div>
+    <p class="nota-b">${p.texto}</p>
+    <div class="elige">Sabor</div>
+    <div class="sabor">${p.sabores.map((s,i)=>`
+      <input type="radio" name="sabor-${p.id}" id="${p.id}-${i}" value="${s}" ${i?"":"checked"}><label for="${p.id}-${i}"><i style="background:${colorDe(s)}"></i>${s}</label>`).join("")}</div>
+    <button class="btn claro agregar" data-id="${p.id}">Agregar al pedido</button>
+  </article>`).join("");
+
+// Sabores
+$("#listaSabores").innerHTML = SABORES.map(s => `
+  <article class="sab">
+    <img src="${s.foto}" alt="Trufa ${s.nombre}" loading="lazy">
+    <div class="marca"><i style="background:${s.color}"></i><span class="ceja">${s.linea}</span></div>
+    <h3 class="serif">${s.nombre}</h3>
+    <p>${s.texto}</p>
+    ${s.aviso ? `<div class="av">${s.aviso}</div>` : ""}
+  </article>`).join("");
+
+// Entregas (sección de la página)
+$("#tablaDespacho").innerHTML = DESPACHO.map(z =>
+  `<div><b>${z.nombre}</b><em>${peso(z.precio)}</em><span>${cap(listaDias(z.dias))}</span></div>`).join("");
+$("#tablaRetiro").innerHTML = RETIRO.map(z =>
+  `<div><b>${z.nombre}</b><em>Sin costo</em><span>${cap(listaDias(z.dias))}</span></div>`).join("");
+$("#gratisTxt").innerHTML = `<b>Despacho gratis</b> en pedidos sobre ${peso(ENVIO_GRATIS_DESDE)}.`;
+
+document.querySelectorAll(".agregar").forEach(b => b.onclick = () => {
+  const p = PRODUCTOS.find(x => x.id === b.dataset.id);
+  const sabor = document.querySelector(`input[name="sabor-${p.id}"]:checked`).value;
+  const clave = p.id + "|" + sabor;
+  const ya = carro.find(x => x.clave === clave);
+  ya ? ya.cant++ : carro.push({ clave, id:p.id, sabor, cant:1 });
+  guardar(); pintar(); aviso("Agregado a tu pedido");
+});
+
+const nombreItem = (p, x) => `Bolsa de ${p.nombre} trufas${x.sabor ? " · " + x.sabor : ""}`;
+
+function pintar(){
+  let total = 0, n = 0;
+  $("#items").innerHTML = carro.length ? carro.map((x,i) => {
+    const p = PRODUCTOS.find(y => y.id === x.id); if(!p) return "";
+    total += p.precio * x.cant; n += x.cant;
+    return `<div class="item">
+      <img src="${p.foto}" alt="">
+      <div><b>${p.nombre} trufas</b><small>${x.sabor} · ${peso(p.precio)}</small></div>
+      <div class="cant"><button data-i="${i}" data-d="-1" aria-label="Quitar uno">−</button><span>${x.cant}</span><button data-i="${i}" data-d="1" aria-label="Agregar uno">+</button></div>
+    </div>`;
+  }).join("") : `<div class="vacio">Aún no agregas trufas.</div>`;
+  $("#subtotal").textContent = peso(total);
+  $("#contador").textContent = n;
+  $("#totalFila").classList.toggle("oculto", !carro.length);
+  $("#form").classList.toggle("oculto", !carro.length);
+  document.querySelectorAll(".cant button").forEach(b => b.onclick = () => {
+    const x = carro[b.dataset.i]; x.cant += +b.dataset.d;
+    if (x.cant <= 0) carro.splice(b.dataset.i, 1);
+    guardar(); pintar();
+  });
+  calcular();
+}
+
+// --- Entrega y total ---
+const esDespacho = () => $('input[name=entrega]:checked').value === "Despacho";
+const zonaActual = () => (esDespacho() ? DESPACHO : RETIRO).find(z => z.id === $("#lugar").value);
+const subtotal = () => carro.reduce((s,x) => s + PRODUCTOS.find(p => p.id === x.id).precio * x.cant, 0);
+function costoEnvio(){
+  if (!esDespacho()) return 0;
+  const z = zonaActual(); if (!z) return 0;
+  return subtotal() >= ENVIO_GRATIS_DESDE ? 0 : z.precio;
+}
+
+// Próximas fechas posibles: desde mañana (o pasado mañana si ya es tarde), por 3 semanas
+function proximasFechas(dias){
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const desde = new Date().getHours() >= 12 ? 2 : 1;
+  const out = [];
+  for (let i = desde; i <= 21 + desde; i++){
+    const f = new Date(hoy); f.setDate(hoy.getDate() + i);
+    if (dias.includes(f.getDay())) out.push(f);
+  }
+  return out;
+}
+const fechaTxt = f => cap(f.toLocaleDateString("es-CL", { weekday:"long", day:"numeric", month:"long" }));
+
+function llenarLugares(){
+  const desp = esDespacho();
+  $("#lugarTit").textContent = desp ? "Comuna" : "Lugar de retiro";
+  $("#lugar").innerHTML = (desp ? DESPACHO : RETIRO).map(z =>
+    `<option value="${z.id}">${z.nombre}${desp ? " · " + peso(z.precio) : ""}</option>`).join("");
+  $("#campoDir").classList.toggle("oculto", !desp);
+  llenarDias();
+}
+function llenarDias(){
+  const z = zonaActual();
+  $("#dia").innerHTML = proximasFechas(z.dias).map(f => `<option>${fechaTxt(f)}</option>`).join("");
+  $("#notaEntrega").textContent = esDespacho()
+    ? `Despachamos a ${z.nombre} los ${listaDias(z.dias)}. Te confirmamos el horario por correo.`
+    : `Retiro coordinado los ${listaDias(z.dias)}. Te mandamos el punto exacto y el horario por correo.`;
+  calcular();
+}
+function calcular(){
+  const sub = subtotal(), envio = costoEnvio();
+  $("#rSub").textContent = peso(sub);
+  $("#rEnvioTit").textContent = esDespacho() ? "Despacho" : "Retiro";
+  $("#rEnvio").textContent = esDespacho() ? (envio ? peso(envio) : "Gratis") : "Sin costo";
+  $("#total").textContent = peso(sub + envio);
+  const falta = ENVIO_GRATIS_DESDE - sub;
+  $("#faltaGratis").classList.toggle("oculto", !carro.length || falta <= 0);
+  $("#faltaTxt").textContent = `Te faltan ${peso(Math.max(falta,0))} para despacho gratis.`;
+}
+
+function aviso(t){ const el=$("#toast"); el.textContent=t; el.classList.add("ver"); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("ver"),1600); }
+const abrir = () => { document.body.style.overflow="hidden"; $("#carro").classList.add("abierto"); };
+const cerrar = () => { document.body.style.overflow=""; $("#carro").classList.remove("abierto"); };
+$("#abrirCarro").onclick = abrir; $("#cerrarCarro").onclick = cerrar; $("#velo").onclick = cerrar;
+document.addEventListener("keydown", e => e.key === "Escape" && cerrar());
+
+document.querySelectorAll('input[name=entrega]').forEach(r => r.onchange = llenarLugares);
+$("#lugar").onchange = llenarDias;
+
+$("#form").onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target, d = Object.fromEntries(new FormData(f));
+  const err = m => { $("#error").textContent = m; $("#error").classList.remove("oculto"); };
+  $("#error").classList.add("oculto");
+  if (!d.nombre.trim()) return err("Falta tu nombre.");
+  if (!/^\S+@\S+\.\S+$/.test(d.correo)) return err("Revisa tu correo.");
+  if (d.entrega === "Despacho" && !d.direccion.trim()) return err("Falta la dirección de despacho.");
+
+  if (!d.dia) return err("Elige un día de entrega.");
+
+  const detalle = carro.map(x => { const p = PRODUCTOS.find(y => y.id === x.id);
+    return `${x.cant} × ${nombreItem(p, x)} — ${peso(p.precio*x.cant)}`; }).join("\n");
+  const z = zonaActual(), sub = subtotal(), envio = costoEnvio(), total = sub + envio;
+  const entregaTxt = d.entrega === "Despacho"
+    ? `Despacho a ${z.nombre}: ${d.direccion}`
+    : `Retiro en ${z.nombre}`;
+
+  $("#enviar").disabled = true; $("#enviar").textContent = "Enviando…";
+  try {
+    const r = await fetch("https://formsubmit.co/ajax/" + CORREO, {
+      method:"POST", headers:{ "Content-Type":"application/json", "Accept":"application/json" },
+      body: JSON.stringify({
+        _subject: `Nuevo pedido ramita — ${d.nombre} — ${peso(total)}`,
+        _template: "box", _replyto: d.correo, _captcha: "false",
+        Nombre: d.nombre, Correo: d.correo, Teléfono: d.telefono || "—",
+        Entrega: entregaTxt, Día: d.dia, Pedido: detalle,
+        Trufas: peso(sub), [d.entrega === "Despacho" ? "Despacho" : "Retiro"]: envio ? peso(envio) : (d.entrega === "Despacho" ? "Gratis" : "Sin costo"),
+        Total: peso(total), Comentario: d.comentario || "—"
+      })
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || j.success === "false" || j.success === false) throw new Error(j.message || "error");
+    carro = []; guardar(); f.reset(); llenarLugares(); pintar();
+    $("#pasoPedido").classList.add("oculto"); $("#pasoListo").classList.remove("oculto");
+  } catch(ex) {
+    err("No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.");
+  } finally {
+    $("#enviar").disabled = false; $("#enviar").textContent = "Enviar pedido";
+  }
+};
+
+llenarLugares();
+pintar();
+</script>
+</body>
+</html>
