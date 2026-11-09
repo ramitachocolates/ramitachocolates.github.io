@@ -153,6 +153,7 @@
   input:focus,textarea:focus{outline:0;border-bottom-color:var(--tinta)}
   textarea{min-height:64px;resize:vertical}
   .opciones{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+  .opciones.tres{grid-template-columns:1fr 1fr 1fr}
   .opciones input{position:absolute;opacity:0;pointer-events:none}
   .opciones label{border:1px solid var(--linea);padding:12px;text-align:center;cursor:pointer;font-size:13px;letter-spacing:.04em;text-transform:none;color:var(--tinta)}
   .opciones input:checked + label{border-color:var(--tinta);box-shadow:inset 0 0 0 1px var(--tinta)}
@@ -321,7 +322,20 @@
           <label class="campo"><span id="lugarTit">Lugar de retiro</span><select name="lugar" id="lugar"></select></label>
           <label class="campo oculto" id="campoDir">Dirección<input type="text" name="direccion" autocomplete="street-address" placeholder="Calle, número, depto. o condominio"></label>
           <label class="campo">Día de entrega<select name="dia" id="dia"></select></label>
+          <div class="campo oculto" id="campoHorario">Horario de despacho
+            <div class="opciones tres">
+              <input type="radio" name="horario" id="h1" value="Mañana" checked><label for="h1">Mañana</label>
+              <input type="radio" name="horario" id="h2" value="Tarde"><label for="h2">Tarde</label>
+              <input type="radio" name="horario" id="h3" value="Me da lo mismo"><label for="h3">Da lo mismo</label>
+            </div>
+          </div>
           <p class="nota" id="notaEntrega"></p>
+          <div class="campo">Forma de pago
+            <div class="opciones">
+              <input type="radio" name="pago" id="p1" value="Tarjeta" checked><label for="p1">Tarjeta (link)</label>
+              <input type="radio" name="pago" id="p2" value="Transferencia"><label for="p2">Transferencia</label>
+            </div>
+          </div>
           <label class="campo">Comentario (opcional)<textarea name="comentario" placeholder="Ej.: es para regalo, mensaje para la tarjeta…"></textarea></label>
           <div class="resumen">
             <div><span>Trufas</span><span id="rSub">$0</span></div>
@@ -330,13 +344,13 @@
           <div class="total"><span>Total</span><span id="total">$0</span></div>
           <p class="error oculto" id="error"></p>
           <button class="btn enviar" type="submit" id="enviar">Enviar pedido</button>
-          <p class="nota">Todavía no pagas nada. Te escribimos para confirmar disponibilidad y entrega, y te mandamos un link para pagar con tarjeta de débito o crédito (o por transferencia, si prefieres).</p>
+          <p class="nota">Todavía no pagas nada. Te escribimos para confirmar disponibilidad y entrega, junto con el link de pago o los datos de transferencia, según lo que elegiste.</p>
         </form>
       </div>
 
       <div class="listo oculto" id="pasoListo">
         <p class="serif">Gracias</p>
-        <p>Recibimos tu pedido. Te escribiremos a tu correo pronto para confirmarlo y mandarte el link de pago.</p>
+        <p>Recibimos tu pedido. Te escribiremos a tu correo pronto para confirmarlo y darte los datos de pago.</p>
       </div>
     </div>
   </aside>
@@ -504,6 +518,7 @@ function llenarLugares(){
   $("#lugar").innerHTML = (desp ? DESPACHO : RETIRO).map(z =>
     `<option value="${z.id}">${z.nombre}${desp ? " · " + peso(z.precio) : ""}</option>`).join("");
   $("#campoDir").classList.toggle("oculto", !desp);
+  $("#campoHorario").classList.toggle("oculto", !desp);
   llenarDias();
 }
 function llenarDias(){
@@ -557,32 +572,48 @@ $("#form").onsubmit = async e => {
   const entregaTxt = d.entrega === "Despacho"
     ? `Despacho a ${z.nombre}: ${d.direccion}`
     : `Retiro en ${z.nombre}`;
+  const horario = d.entrega === "Despacho" ? d.horario : "";
+  // N° de pedido: R + mes/día + 3 letras/números, ej. R1109-K7M
+  const hoy = new Date(), dos = n => String(n).padStart(2,"0");
+  const numero = `R${dos(hoy.getMonth()+1)}${dos(hoy.getDate())}-` +
+    Array.from({length:3}, () => "ABCDEFGHJKMNPQRSTUVWXYZ23456789"[Math.floor(Math.random()*31)]).join("");
+  // Enlace privado para gestionar el pedido (los datos van después del #, no se envían a ningún servidor)
+  const datosGestion = { n:numero, no:d.nombre.trim(), e:d.correo.trim(), t:d.telefono || "", en:d.entrega, l:z.nombre,
+    di:d.entrega === "Despacho" ? d.direccion.trim() : "", d:d.dia, h:horario, p:d.pago, c:d.comentario || "",
+    it:carro.map(x => { const p = PRODUCTOS.find(y => y.id === x.id); return [x.cant, p.nombre, x.sabor, p.precio]; }),
+    s:sub, x:envio, tt:total };
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(datosGestion)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  const linkGestion = new URL("pedido.html", location.href).href.split("#")[0] + "#" + b64;
 
   $("#enviar").disabled = true; $("#enviar").textContent = "Enviando…";
   try {
     const r = await fetch("https://formsubmit.co/ajax/" + CORREO, {
       method:"POST", headers:{ "Content-Type":"application/json", "Accept":"application/json" },
       body: JSON.stringify({
-        _subject: `Nuevo pedido ramita — ${d.nombre} — ${peso(total)}`,
+        _subject: `Nuevo pedido ramita ${numero} — ${d.nombre} — ${peso(total)}`,
         _template: "box", _replyto: d.correo, _captcha: "false",
         // Correo automático para el cliente (FormSubmit lo manda al campo «email»)
         _autoresponse:
 `¡Hola ${d.nombre.trim().split(" ")[0]}! Gracias por tu pedido en ramita.
 
-Tu pedido:
+Pedido N° ${numero}
 ${detalle}
 
 ${entregaTxt}
-Día: ${d.dia}
+Día: ${d.dia}${horario ? "\nHorario preferido: " + horario : ""}
+Forma de pago: ${d.pago === "Transferencia" ? "transferencia" : "tarjeta (link de pago)"}
 Trufas: ${peso(sub)} · ${d.entrega === "Despacho" ? "Despacho: " + (envio ? peso(envio) : "gratis") : "Retiro sin costo"}
 Total: ${peso(total)}
 
-Todavía no tienes que pagar nada. Te escribiremos pronto para confirmar disponibilidad y horario, y te mandaremos un link para pagar con tarjeta (o los datos para transferencia, si prefieres).
+Todavía no tienes que pagar nada. Te escribiremos pronto para confirmar disponibilidad y horario, junto con ${d.pago === "Transferencia" ? "los datos para la transferencia" : "el link para pagar con tarjeta"}.
 
 Con cariño,
 ramita chocolates`,
+        "Gestionar pedido": linkGestion,
+        "N° de pedido": numero,
         Nombre: d.nombre, email: d.correo, Teléfono: d.telefono || "—",
-        Entrega: entregaTxt, Día: d.dia, Pedido: detalle,
+        Entrega: entregaTxt, Día: d.dia, ...(horario ? { "Horario preferido": horario } : {}),
+        "Forma de pago": d.pago, Pedido: detalle,
         Trufas: peso(sub), [d.entrega === "Despacho" ? "Despacho" : "Retiro"]: envio ? peso(envio) : (d.entrega === "Despacho" ? "Gratis" : "Sin costo"),
         Total: peso(total), Comentario: d.comentario || "—"
       })

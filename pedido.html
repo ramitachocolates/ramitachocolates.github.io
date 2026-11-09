@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Gestionar pedido · ramita</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{ --tinta:#2a1a12; --suave:#7a675b; --cobre:#8a4b2e; --fondo:#f7f2ea; --papel:#fbf8f3; --linea:#e3d9cb; --ok:#3d6b4a; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fondo);color:var(--tinta);font-family:'Instrument Sans',system-ui,sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:820px;margin:0 auto;padding:0 20px}
+  .serif{font-family:'DM Serif Display',Georgia,serif;font-weight:400}
+  .ceja{display:block;font-size:10px;letter-spacing:.28em;text-transform:uppercase;font-weight:500;color:var(--suave)}
+  header{border-bottom:1px solid var(--linea);padding:18px 0;margin-bottom:36px}
+  header .wrap{display:flex;justify-content:space-between;align-items:center}
+  .logo b{font-family:'DM Serif Display',serif;font-weight:400;font-size:24px;display:block;line-height:1}
+  .logo small{font-size:8px;letter-spacing:.42em}
+  h1{font-size:38px;margin:6px 0 4px;line-height:1.05}
+  .sub{color:var(--suave);margin:0 0 30px}
+  .ficha{background:var(--papel);border:1px solid var(--linea);padding:22px 24px;display:grid;grid-template-columns:1fr 1fr;gap:16px 28px;margin-bottom:34px}
+  .ficha div span{display:block;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--suave)}
+  .ficha .full{grid-column:1/-1}
+  .ficha pre{margin:2px 0 0;font:inherit;white-space:pre-wrap}
+  .campos{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:34px}
+  label{display:grid;gap:6px;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--suave)}
+  input,textarea{width:100%;padding:10px 0;border:0;border-bottom:1px solid var(--linea);background:transparent;font:15px 'Instrument Sans',sans-serif;color:var(--tinta);letter-spacing:0;text-transform:none;border-radius:0}
+  input:focus,textarea:focus{outline:0;border-bottom-color:var(--tinta)}
+  .paso{border-top:1px solid var(--linea);padding:24px 0}
+  .paso-top{display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer}
+  .paso h2{margin:0;font-size:24px;display:flex;align-items:center;gap:12px}
+  .num{font-family:'Instrument Sans',sans-serif;font-size:11px;border:1px solid var(--tinta);width:26px;height:26px;display:inline-grid;place-items:center;flex:none}
+  .enviado .num{background:var(--ok);border-color:var(--ok);color:#fff}
+  .estado{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--suave)}
+  .enviado .estado{color:var(--ok)}
+  .cuerpo{margin-top:16px}
+  .cuerpo.cerrado{display:none}
+  .cuerpo textarea{min-height:280px;border:1px solid var(--linea);padding:14px;background:var(--papel);font-size:14px;line-height:1.55;resize:vertical}
+  .asunto{margin-bottom:12px}
+  .acciones{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+  .btn{display:inline-flex;align-items:center;justify-content:center;font:500 11px 'Instrument Sans',sans-serif;letter-spacing:.2em;text-transform:uppercase;padding:14px 20px;border:1px solid var(--tinta);background:var(--tinta);color:var(--fondo);cursor:pointer;text-decoration:none}
+  .btn.claro{background:transparent;color:var(--tinta)}
+  .marcar{font-size:13px;color:var(--suave);display:flex;align-items:center;gap:8px;letter-spacing:0;text-transform:none;cursor:pointer}
+  .marcar input{width:auto}
+  .aviso{background:#f1e6d8;border-left:3px solid var(--cobre);padding:12px 16px;font-size:14px;margin-bottom:24px}
+  details{border-top:1px solid var(--linea);padding:22px 0 60px;margin-top:10px}
+  summary{cursor:pointer;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--suave)}
+  details textarea{min-height:140px;border:1px solid var(--linea);padding:12px;margin-top:12px;background:var(--papel)}
+  .ok{color:var(--ok);font-size:13px;margin-left:10px}
+  .vacio{text-align:center;padding:80px 0;color:var(--suave)}
+  @media (max-width:640px){ .ficha,.campos{grid-template-columns:1fr} h1{font-size:30px} }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="logo"><b>ramita</b><small>CHOCOLATES</small></div>
+  <span class="ceja">Gestión de pedido</span>
+</div></header>
+
+<main class="wrap" id="app"></main>
+
+<script>
+/* Página privada para gestionar un pedido. Se abre desde el enlace «Gestionar pedido»
+   del correo. Cada botón abre Gmail con el correo ya escrito: tú lo revisas y lo envías.
+   Nada se envía solo. */
+const CUENTA = "ramitachocolates@gmail.com";
+const $ = s => document.querySelector(s);
+const peso = n => "$" + Number(n).toLocaleString("es-CL");
+const guardarLS = (k,v) => { try { localStorage.setItem(k, v); } catch(e) {} };
+const leerLS = k => { try { return localStorage.getItem(k) || ""; } catch(e) { return ""; } };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+let P = null;
+try {
+  const b = location.hash.slice(1).replace(/-/g,"+").replace(/_/g,"/");
+  P = JSON.parse(decodeURIComponent(escape(atob(b))));
+} catch(e) {}
+
+if (!P) {
+  $("#app").innerHTML = `<p class="vacio">Abre esta página desde el enlace «Gestionar pedido» del correo de un pedido.</p>`;
+} else {
+  const despacho = P.en === "Despacho";
+  const primer = P.no.split(" ")[0];
+  const clave = k => `ramita-${P.n}-${k}`;
+  const detalle = P.it.map(([c,f,s,pr]) => `${c} × Bolsa de ${f} trufas · ${s} — ${peso(pr*c)}`).join("\n");
+  const entregaTxt = despacho ? `Despacho a ${P.l}: ${P.di}` : `Retiro en ${P.l}`;
+
+  $("#app").innerHTML = `
+    <span class="ceja">Pedido N° ${esc(P.n)}</span>
+    <h1 class="serif">${esc(P.no)}</h1>
+    <p class="sub">${esc(P.e)}${P.t ? " · " + esc(P.t) : ""}</p>
+
+    <div class="ficha">
+      <div class="full"><span>Pedido</span><pre>${esc(detalle)}</pre></div>
+      <div><span>Entrega</span>${esc(entregaTxt)}</div>
+      <div><span>Día</span>${esc(P.d)}${P.h ? " · " + esc(P.h) : ""}</div>
+      <div><span>Forma de pago</span>${esc(P.p)}</div>
+      <div><span>Total</span>${peso(P.tt)} <small style="color:var(--suave)">(trufas ${peso(P.s)}${despacho ? " + despacho " + (P.x ? peso(P.x) : "gratis") : ""})</small></div>
+      ${P.c ? `<div class="full"><span>Comentario</span>${esc(P.c)}</div>` : ""}
+    </div>
+
+    <div class="aviso" id="avisoBanco" style="display:none">Para los correos de transferencia, pega tus datos bancarios una vez en «Datos de transferencia», al final de esta página. Quedan guardados solo en este navegador.</div>
+
+    <div class="campos">
+      <label>Horario de entrega a confirmar<input id="fHorario" placeholder="${despacho ? "Ej.: entre 10:00 y 13:00" : "Ej.: a las 18:00"}"></label>
+      ${P.p === "Tarjeta" ? `<label>Link de pago<input id="fLink" placeholder="Pega aquí el link de pago"></label>` : `<label>Punto exacto de retiro / notas<input id="fNota" placeholder="${despacho ? "Opcional" : "Ej.: dirección o punto de encuentro"}"></label>`}
+      ${P.p === "Tarjeta" ? `<label class="full" style="grid-column:1/-1">${despacho ? "Notas (opcional)" : "Punto exacto de retiro"}<input id="fNota" placeholder="${despacho ? "Opcional" : "Ej.: dirección o punto de encuentro"}"></label>` : ""}
+    </div>
+
+    <div id="pasos"></div>
+
+    <details>
+      <summary>Datos de transferencia</summary>
+      <textarea id="banco" placeholder="Nombre, RUT, banco, tipo y número de cuenta, correo"></textarea>
+      <div class="acciones"><button class="btn claro" id="guardarBanco">Guardar en este navegador</button><span class="ok" id="okBanco"></span></div>
+    </details>`;
+
+  // Campos que se recuerdan por pedido
+  const campos = ["fHorario","fLink","fNota"].filter(id => $("#"+id));
+  campos.forEach(id => { $("#"+id).value = leerLS(clave(id)) || (id === "fHorario" && P.h && P.h !== "Me da lo mismo" ? "en la " + P.h.toLowerCase() : ""); });
+  $("#banco").value = leerLS("ramita-banco");
+  $("#guardarBanco").onclick = () => { guardarLS("ramita-banco", $("#banco").value.trim()); $("#okBanco").textContent = "Guardado"; actualizar(); };
+  if (P.p === "Transferencia" && !leerLS("ramita-banco")) $("#avisoBanco").style.display = "block";
+
+  const v = id => ($("#"+id) ? $("#"+id).value.trim() : "");
+  const firma = "\n\nUn abrazo,\nramita chocolates";
+  const resumen = () => `Pedido N° ${P.n}\n${detalle}\n${despacho ? "Despacho: " + (P.x ? peso(P.x) : "gratis") + "\n" : ""}Total: ${peso(P.tt)}`;
+  const cuando = () => `${P.d}${v("fHorario") ? ", " + v("fHorario") : ""}`;
+  const dondeRetiro = () => `${P.l}${v("fNota") ? " (" + v("fNota") + ")" : ""}`;
+  const pagoTxt = () => P.p === "Transferencia"
+    ? `Para pagar, puedes transferir ${peso(P.tt)} a:\n\n${leerLS("ramita-banco") || "[pega tus datos de transferencia al final de la página de gestión]"}\n\nCuando transfieras, respóndenos este correo con el comprobante.`
+    : `Puedes pagar con tarjeta de débito o crédito en este link:\n${v("fLink") || "[pega aquí el link de pago]"}`;
+
+  const PASOS = [
+    { k:"confirmar", t:"Confirmar pedido",
+      asunto: () => `Tu pedido ramita N° ${P.n} está confirmado`,
+      cuerpo: () => `Hola ${primer}:\n\n¡Gracias por tu pedido! Te confirmo el detalle:\n\n${resumen()}\n\n${despacho ? `Despacho: ${P.di}, ${P.l}\nDía: ${cuando()}` : `Retiro: ${dondeRetiro()}\nDía: ${cuando()}`}\n\n${pagoTxt()}\n\nSi necesitas cambiar algo, solo responde este correo.${firma}` },
+    { k:"pagado", t:"Pagado",
+      asunto: () => `Recibimos tu pago · pedido ramita N° ${P.n}`,
+      cuerpo: () => `Hola ${primer}:\n\nRecibimos tu pago de ${peso(P.tt)}. ¡Muchas gracias!\n\n${resumen()}\n\nTe avisaremos cuando empecemos a preparar tus trufas.${firma}` },
+    { k:"preparacion", t:"En preparación",
+      asunto: () => `Estamos preparando tu pedido ramita N° ${P.n}`,
+      cuerpo: () => `Hola ${primer}:\n\nYa estamos preparando tus trufas, hechas a mano, para el ${cuando()}.\n\n${resumen()}${firma}` },
+    despacho
+      ? { k:"despacho", t:"En despacho",
+          asunto: () => `Tu pedido ramita N° ${P.n} va en camino`,
+          cuerpo: () => `Hola ${primer}:\n\n¡Tu pedido va en camino! Llegará hoy a ${P.di}, ${P.l}${v("fHorario") ? ", " + v("fHorario") : ""}.\n\n${resumen()}${firma}` }
+      : { k:"despacho", t:"Listo para retiro",
+          asunto: () => `Tu pedido ramita N° ${P.n} está listo para retiro`,
+          cuerpo: () => `Hola ${primer}:\n\n¡Tu pedido está listo! Te esperamos en ${dondeRetiro()} el ${cuando()}.\n\n${resumen()}${firma}` },
+    { k:"entregado", t:"Entregado",
+      asunto: () => `¡Gracias por elegir ramita! · pedido N° ${P.n}`,
+      cuerpo: () => `Hola ${primer}:\n\nTu pedido fue entregado. ¡Esperamos que disfrutes tus trufas!\n\nPara que se mantengan perfectas, guárdalas en un lugar fresco y seco, entre 15 y 18 °C.\n\nGracias por elegirnos. Nos encantaría saber qué te parecieron.${firma}` },
+  ];
+
+  $("#pasos").innerHTML = PASOS.map((p,i) => `
+    <section class="paso" id="paso-${p.k}">
+      <div class="paso-top" data-k="${p.k}">
+        <h2 class="serif"><span class="num">${i+1}</span>${p.t}</h2>
+        <span class="estado" id="est-${p.k}"></span>
+      </div>
+      <div class="cuerpo cerrado" id="cue-${p.k}">
+        <label class="asunto">Asunto<input id="as-${p.k}"></label>
+        <textarea id="tx-${p.k}"></textarea>
+        <div class="acciones">
+          <a class="btn" id="gm-${p.k}" target="_blank" rel="noopener">Abrir en Gmail</a>
+          <button class="btn claro" id="cp-${p.k}">Copiar texto</button>
+          <label class="marcar"><input type="checkbox" id="ck-${p.k}"> Ya lo envié</label>
+        </div>
+      </div>
+    </section>`).join("");
+
+  const editado = {};
+  function gmailURL(k){
+    const q = { view:"cm", fs:"1", authuser:CUENTA, to:P.e, su:$("#as-"+k).value, body:$("#tx-"+k).value };
+    return "https://mail.google.com/mail/?" + Object.entries(q).map(([a,b]) => a + "=" + encodeURIComponent(b)).join("&");
+  }
+  function marcar(k){
+    const env = leerLS(clave("env-"+k));
+    $("#ck-"+k).checked = !!env;
+    $("#paso-"+k).classList.toggle("enviado", !!env);
+    $("#est-"+k).textContent = env ? "Enviado " + env : "Pendiente";
+  }
+  function actualizar(){
+    PASOS.forEach(p => {
+      if (!editado[p.k]) { $("#as-"+p.k).value = p.asunto(); $("#tx-"+p.k).value = p.cuerpo(); }
+      $("#gm-"+p.k).href = gmailURL(p.k);
+    });
+  }
+  PASOS.forEach(p => {
+    $("#tx-"+p.k).oninput = $("#as-"+p.k).oninput = () => { editado[p.k] = true; $("#gm-"+p.k).href = gmailURL(p.k); };
+    $(`.paso-top[data-k="${p.k}"]`).onclick = () => $("#cue-"+p.k).classList.toggle("cerrado");
+    $("#gm-"+p.k).onclick = () => { $("#gm-"+p.k).href = gmailURL(p.k); };
+    $("#cp-"+p.k).onclick = async () => {
+      try { await navigator.clipboard.writeText($("#tx-"+p.k).value); $("#cp-"+p.k).textContent = "Copiado"; setTimeout(() => $("#cp-"+p.k).textContent = "Copiar texto", 1500); } catch(e) {}
+    };
+    $("#ck-"+p.k).onchange = e => {
+      if (e.target.checked) guardarLS(clave("env-"+p.k), new Date().toLocaleDateString("es-CL", { day:"numeric", month:"short" }));
+      else try { localStorage.removeItem(clave("env-"+p.k)); } catch(e) {}
+      marcar(p.k);
+    };
+    marcar(p.k);
+  });
+  campos.forEach(id => $("#"+id).oninput = () => { guardarLS(clave(id), $("#"+id).value); actualizar(); });
+  actualizar();
+  // Abre el primer paso que falte por enviar
+  const sig = PASOS.find(p => !leerLS(clave("env-"+p.k)));
+  if (sig) $("#cue-"+sig.k).classList.remove("cerrado");
+}
+</script>
+</body>
+</html>
