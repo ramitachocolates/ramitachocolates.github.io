@@ -301,7 +301,7 @@
       <div class="pasos">
         <div class="paso"><b>1</b><h3>Elige</h3><p>Escoge tu bolsa y el sabor, y agrégala a tu pedido.</p></div>
         <div class="paso"><b>2</b><h3>Envía</h3><p>Déjanos tu nombre, tu correo y si prefieres retiro o despacho.</p></div>
-        <div class="paso"><b>3</b><h3>Confirmamos</h3><p>Te escribimos para confirmar y te mandamos un link para pagar con tarjeta (o por transferencia, si prefieres).</p></div>
+        <div class="paso"><b>3</b><h3>Paga</h3><p>Paga con tarjeta o débito en Mercado Pago, de forma segura, o elige transferencia. Te escribimos para coordinar la entrega.</p></div>
       </div>
     </div>
   </section>
@@ -350,7 +350,7 @@
           <p class="nota" id="notaEntrega"></p>
           <div class="campo">Forma de pago
             <div class="opciones">
-              <input type="radio" name="pago" id="p1" value="Tarjeta" checked><label for="p1">Tarjeta (link)</label>
+              <input type="radio" name="pago" id="p1" value="Tarjeta" checked><label for="p1">Tarjeta o débito</label>
               <input type="radio" name="pago" id="p2" value="Transferencia"><label for="p2">Transferencia</label>
             </div>
           </div>
@@ -362,7 +362,7 @@
           <div class="total"><span>Total</span><span id="total">$0</span></div>
           <p class="error oculto" id="error"></p>
           <button class="btn enviar" type="submit" id="enviar">Enviar pedido</button>
-          <p class="nota">Todavía no pagas nada. Te escribimos para confirmar disponibilidad y entrega, junto con el link de pago o los datos de transferencia, según lo que elegiste.</p>
+          <p class="nota" id="notaPago">Todavía no pagas nada. Te escribimos para confirmar disponibilidad y entrega, junto con el link de pago o los datos de transferencia, según lo que elegiste.</p>
         </form>
       </div>
 
@@ -386,7 +386,7 @@ const CORREO = "ramitachocolates@gmail.com";
 
 /* 1b) PLANILLA de pedidos (Google Sheets). Pega aquí la URL de la
        implementación de Apps Script (termina en /exec). "" = no anotar. */
-const PLANILLA = "";
+const PLANILLA = "https://script.google.com/macros/s/AKfycbxkG2xE5ROLNtTa2XQseHjTN4e09iUzZLQH5Gr5032VjY3jD9v9XRlFUvh35lcuWf7s/exec";
 
 /* 2) INSTAGRAM (opcional): pon el enlace completo o deja "" para ocultarlo */
 const INSTAGRAM = "";
@@ -571,6 +571,20 @@ $("#abrirCarro").onclick = abrir; $("#cerrarCarro").onclick = cerrar; $("#velo")
 document.addEventListener("keydown", e => e.key === "Escape" && cerrar());
 
 document.querySelectorAll('input[name=entrega]').forEach(r => r.onchange = llenarLugares);
+
+// Forma de pago: con PLANILLA conectada, «Tarjeta» paga al tiro en Mercado Pago
+const pagaAhora = () => !!PLANILLA && $('input[name=pago]:checked').value === "Tarjeta";
+const textoBoton = () => pagaAhora() ? "Ir a pagar" : "Enviar pedido";
+function pintarPago(){
+  $("#enviar").textContent = textoBoton();
+  $("#notaPago").textContent = pagaAhora()
+    ? "Te llevamos a Mercado Pago para pagar con tarjeta de crédito o débito de forma segura. Después te escribimos para coordinar la entrega."
+    : $('input[name=pago]:checked').value === "Transferencia"
+      ? "Todavía no pagas nada. Te escribimos para confirmar disponibilidad y entrega, junto con los datos para la transferencia."
+      : "Todavía no pagas nada. Te escribimos para confirmar disponibilidad y entrega, junto con el link de pago.";
+}
+document.querySelectorAll('input[name=pago]').forEach(r => r.onchange = pintarPago);
+pintarPago();
 $("#lugar").onchange = llenarDias;
 
 $("#form").onsubmit = async e => {
@@ -603,8 +617,27 @@ $("#form").onsubmit = async e => {
   const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(datosGestion)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
   const linkGestion = new URL("pedido.html", location.href).href.split("#")[0] + "#" + b64;
 
-  $("#enviar").disabled = true; $("#enviar").textContent = "Enviando…";
+  const ahora = pagaAhora();
+  const datosPlanilla = {
+    numero, pago: d.pago, pagarAhora: ahora,
+    nombre: d.nombre, correo: d.correo, telefono: d.telefono || "",
+    entrega: d.entrega, lugar: z.nombre, direccion: d.entrega === "Despacho" ? d.direccion : "",
+    dia: d.dia, horario, comentario: d.comentario || "", detalle, trufas: sub, despacho: envio, total,
+    items: carro.map(x => ({ formato: PRODUCTOS.find(p => p.id === x.id).nombre, sabor: x.sabor || "",
+      cant: x.cant, precio: PRODUCTOS.find(p => p.id === x.id).precio }))
+  };
+
+  $("#enviar").disabled = true; $("#enviar").textContent = ahora ? "Preparando el pago…" : "Enviando…";
   try {
+    // Pago con tarjeta: primero se anota en la planilla y se crea el pago en Mercado Pago
+    let linkPago = "";
+    if (ahora) {
+      const rp = await fetch(PLANILLA, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" },
+        body: JSON.stringify(datosPlanilla) }).catch(() => null);
+      const jp = rp ? await rp.json().catch(() => ({})) : {};
+      if (!jp.pagar) throw new Error("pago");
+      linkPago = jp.pagar;
+    }
     const r = await fetch("https://formsubmit.co/ajax/" + CORREO, {
       method:"POST", headers:{ "Content-Type":"application/json", "Accept":"application/json" },
       body: JSON.stringify({
@@ -619,11 +652,13 @@ ${detalle}
 
 ${entregaTxt}
 Día: ${d.dia}${horario ? "\nHorario preferido: " + horario : ""}
-Forma de pago: ${d.pago === "Transferencia" ? "transferencia" : "tarjeta (link de pago)"}
+Forma de pago: ${d.pago === "Transferencia" ? "transferencia" : ahora ? "tarjeta (Mercado Pago)" : "tarjeta (link de pago)"}
 Trufas: ${peso(sub)} · ${d.entrega === "Despacho" ? "Despacho: " + (envio ? peso(envio) : "gratis") : "Retiro sin costo"}
 Total: ${peso(total)}
 
-Todavía no tienes que pagar nada. Te escribiremos pronto para confirmar disponibilidad y horario, junto con ${d.pago === "Transferencia" ? "los datos para la transferencia" : "el link para pagar con tarjeta"}.
+${ahora
+  ? "Si completaste el pago en Mercado Pago, te llegará su comprobante por correo. Si no alcanzaste a pagar, responde este correo y te ayudamos. Te escribiremos pronto para coordinar la entrega."
+  : "Todavía no tienes que pagar nada. Te escribiremos pronto para confirmar disponibilidad y horario, junto con " + (d.pago === "Transferencia" ? "los datos para la transferencia" : "el link para pagar con tarjeta") + "."}
 
 Con cariño,
 ramita chocolates`,
@@ -638,26 +673,27 @@ ramita chocolates`,
     });
     const j = await r.json().catch(() => ({}));
     if (!r.ok || j.success === "false" || j.success === false) throw new Error(j.message || "error");
+    if (ahora) {
+      carro = []; guardar();
+      location.href = linkPago;
+      return;
+    }
     if (PLANILLA) fetch(PLANILLA, {
       method:"POST", mode:"no-cors", keepalive:true,
       headers:{ "Content-Type":"text/plain;charset=utf-8" },
-      body: JSON.stringify({
-        nombre: d.nombre, correo: d.correo, telefono: d.telefono || "",
-        entrega: d.entrega, lugar: z.nombre, direccion: d.entrega === "Despacho" ? d.direccion : "",
-        dia: d.dia, comentario: d.comentario || "", detalle, trufas: sub, despacho: envio, total,
-        items: carro.map(x => ({ formato: PRODUCTOS.find(p => p.id === x.id).nombre, sabor: x.sabor || "",
-          cant: x.cant, precio: PRODUCTOS.find(p => p.id === x.id).precio }))
-      })
+      body: JSON.stringify(datosPlanilla)
     }).catch(() => {});
     carro = []; guardar(); f.reset(); llenarLugares(); pintar();
     $("#pasoPedido").classList.add("oculto"); $("#pasoListo").classList.remove("oculto");
   } catch(ex) {
     const msg = String(ex && ex.message || "");
-    err(/activ/i.test(msg)
+    err(msg === "pago"
+      ? `No pudimos abrir el pago con tarjeta. Inténtalo de nuevo, elige transferencia o escríbenos a ${CORREO}.`
+      : /activ/i.test(msg)
       ? `El formulario de pedidos aún no está activado. Mientras tanto, escríbenos a ${CORREO} y te ayudamos.`
       : `No se pudo enviar el pedido. Inténtalo de nuevo o escríbenos a ${CORREO}.`);
   } finally {
-    $("#enviar").disabled = false; $("#enviar").textContent = "Enviar pedido";
+    $("#enviar").disabled = false; $("#enviar").textContent = textoBoton();
   }
 };
 
