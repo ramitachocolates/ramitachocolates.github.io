@@ -106,12 +106,12 @@ if (!P) {
       ${P.c ? `<div class="full"><span>Comentario</span>${esc(P.c)}</div>` : ""}
     </div>
 
+    ${P.p === "Tarjeta" ? `<div class="aviso" style="display:block">Pago con tarjeta en Mercado Pago: el cliente ya recibió un correo automático, así que no hace falta confirmarle nada. Antes de prepararlo, revisa que el pago esté aprobado (Estado «Pagado» en tu planilla o en tu Mercado Pago). Si no aparece, puede que no haya alcanzado a pagar: escríbele para ayudarlo.</div>` : ""}
     <div class="aviso" id="avisoBanco" style="display:none">Para los correos de transferencia, pega tus datos bancarios una vez en «Datos de transferencia», al final de esta página. Quedan guardados solo en este navegador.</div>
 
     <div class="campos">
       <label>Horario de entrega a confirmar<input id="fHorario" placeholder="${despacho ? "Ej.: entre 10:00 y 13:00" : "Ej.: a las 18:00"}"></label>
-      ${P.p === "Tarjeta" ? `<label>Link de pago<input id="fLink" placeholder="Pega aquí el link de pago"></label>` : `<label>Punto exacto de retiro / notas<input id="fNota" placeholder="${despacho ? "Opcional" : "Ej.: dirección o punto de encuentro"}"></label>`}
-      ${P.p === "Tarjeta" ? `<label class="full" style="grid-column:1/-1">${despacho ? "Notas (opcional)" : "Punto exacto de retiro"}<input id="fNota" placeholder="${despacho ? "Opcional" : "Ej.: dirección o punto de encuentro"}"></label>` : ""}
+      <label>Punto exacto de retiro / notas<input id="fNota" placeholder="${despacho ? "Opcional" : "Ej.: dirección o punto de encuentro"}"></label>
     </div>
 
     <div id="pasos"></div>
@@ -137,13 +137,16 @@ if (!P) {
   const dondeRetiro = () => `${P.l}${v("fNota") ? " (" + v("fNota") + ")" : ""}`;
   const pagoTxt = () => P.p === "Transferencia"
     ? `Para pagar, puedes transferir ${peso(P.tt)} a:\n\n${leerLS("ramita-banco") || "[pega tus datos de transferencia al final de la página de gestión]"}\n\nCuando transfieras, respóndenos este correo con el comprobante.`
-    : `Puedes pagar con tarjeta de débito o crédito en este link:\n${v("fLink") || "[pega aquí el link de pago]"}`;
+    : "";
 
+  const pagoOnline = P.p === "Tarjeta";
   const PASOS = [
-    { k:"confirmar", t:"Confirmar pedido",
+    pagoOnline
+      ? null
+      : { k:"confirmar", t:"Confirmar pedido",
       asunto: () => `Tu pedido ramita N° ${P.n} está confirmado`,
       cuerpo: () => `Hola ${primer}:\n\n¡Gracias por tu pedido! Te confirmo el detalle:\n\n${resumen()}\n\n${despacho ? `Despacho: ${P.di}, ${P.l}\nDía: ${cuando()}` : `Retiro: ${dondeRetiro()}\nDía: ${cuando()}`}\n\n${pagoTxt()}\n\nSi necesitas cambiar algo, solo responde este correo.${firma}` },
-    { k:"pagado", t:"Pagado",
+    pagoOnline ? null : { k:"pagado", t:"Pagado",
       asunto: () => `Recibimos tu pago · pedido ramita N° ${P.n}`,
       cuerpo: () => `Hola ${primer}:\n\nRecibimos tu pago de ${peso(P.tt)}. ¡Muchas gracias!\n\n${resumen()}\n\nAhora preparamos tus trufas a mano para el ${cuandoMin()}. Te avisaremos cuando ${despacho ? "tu pedido vaya en camino" : "esté listo para retiro"}.${firma}` },
     despacho
@@ -156,7 +159,7 @@ if (!P) {
     { k:"entregado", t:"Entregado",
       asunto: () => `¡Gracias por elegir ramita! · pedido N° ${P.n}`,
       cuerpo: () => `Hola ${primer}:\n\nTu pedido fue entregado. ¡Esperamos que disfrutes tus trufas!\n\nPara que se mantengan perfectas, guárdalas en un lugar fresco y seco, entre 15 y 18 °C.\n\nGracias por elegirnos. Nos encantaría saber qué te parecieron.${firma}` },
-  ];
+  ].filter(Boolean);
 
   $("#pasos").innerHTML = PASOS.map((p,i) => `
     <section class="paso" id="paso-${p.k}">

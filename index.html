@@ -301,7 +301,7 @@
       <div class="pasos">
         <div class="paso"><b>1</b><h3>Elige</h3><p>Escoge tu bolsa y el sabor, y agrégala a tu pedido.</p></div>
         <div class="paso"><b>2</b><h3>Envía</h3><p>Déjanos tu nombre, tu correo y si prefieres retiro o despacho.</p></div>
-        <div class="paso"><b>3</b><h3>Paga</h3><p>Paga con tarjeta o débito en Mercado Pago, de forma segura, o elige transferencia. Te escribimos para coordinar la entrega.</p></div>
+        <div class="paso"><b>3</b><h3>Paga</h3><p>Paga con tarjeta o débito en Mercado Pago, de forma segura, o elige transferencia. Te avisamos cuando tu pedido esté listo.</p></div>
       </div>
     </div>
   </section>
@@ -578,7 +578,7 @@ const textoBoton = () => pagaAhora() ? "Ir a pagar" : "Enviar pedido";
 function pintarPago(){
   $("#enviar").textContent = textoBoton();
   $("#notaPago").textContent = pagaAhora()
-    ? "Te llevamos a Mercado Pago para pagar con tarjeta de crédito o débito de forma segura. Después te escribimos para coordinar la entrega."
+    ? "Te llevamos a Mercado Pago para pagar con tarjeta de crédito o débito de forma segura. Después te avisamos cuando tu pedido esté listo."
     : $('input[name=pago]:checked').value === "Transferencia"
       ? "Todavía no pagas nada. Te escribimos para confirmar disponibilidad y entrega, junto con los datos para la transferencia."
       : "Todavía no pagas nada. Te escribimos para confirmar disponibilidad y entrega, junto con el link de pago.";
@@ -657,7 +657,9 @@ Trufas: ${peso(sub)} · ${d.entrega === "Despacho" ? "Despacho: " + (envio ? pes
 Total: ${peso(total)}
 
 ${ahora
-  ? "Si completaste el pago en Mercado Pago, te llegará su comprobante por correo. Si no alcanzaste a pagar, responde este correo y te ayudamos. Te escribiremos pronto para coordinar la entrega."
+  ? "Cuando se apruebe tu pago, te llegará el comprobante de Mercado Pago a tu correo. Prepararemos tus trufas a mano y te avisaremos " +
+    (d.entrega === "Despacho" ? "cuando tu pedido vaya en camino." : "cuando esté listo para retiro, junto con el punto exacto y el horario.") +
+    "\n\nSi no alcanzaste a pagar, responde este correo y te ayudamos."
   : "Todavía no tienes que pagar nada. Te escribiremos pronto para confirmar disponibilidad y horario, junto con " + (d.pago === "Transferencia" ? "los datos para la transferencia" : "el link para pagar con tarjeta") + "."}
 
 Con cariño,
