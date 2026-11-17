@@ -672,7 +672,8 @@ ramita chocolates`,
       })
     });
     const j = await r.json().catch(() => ({}));
-    if (!r.ok || j.success === "false" || j.success === false) throw new Error(j.message || "error");
+    // Con tarjeta el pedido ya quedó en la planilla: aunque falle el correo, seguimos al pago
+    if (!ahora && (!r.ok || j.success === "false" || j.success === false)) throw new Error(j.message || "error");
     if (ahora) {
       carro = []; guardar();
       location.href = linkPago;
