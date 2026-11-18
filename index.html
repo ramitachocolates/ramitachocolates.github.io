@@ -362,13 +362,13 @@
           <div class="total"><span>Total</span><span id="total">$0</span></div>
           <p class="error oculto" id="error"></p>
           <button class="btn enviar" type="submit" id="enviar">Enviar pedido</button>
-          <p class="nota" id="notaPago">Todavía no pagas nada. Te escribimos para confirmar disponibilidad y entrega, junto con el link de pago o los datos de transferencia, según lo que elegiste.</p>
+          <p class="nota" id="notaPago">Todavía no pagas nada. Te llegará un correo con el detalle y los datos para transferir.</p>
         </form>
       </div>
 
       <div class="listo oculto" id="pasoListo">
         <p class="serif">Gracias</p>
-        <p>Recibimos tu pedido. Te escribiremos a tu correo pronto para confirmarlo y darte los datos de pago.</p>
+        <p>Recibimos tu pedido. Te enviamos un correo con el detalle y los datos para transferir (si no lo ves, revisa spam).</p>
       </div>
     </div>
   </aside>
@@ -386,7 +386,7 @@ const CORREO = "ramitachocolates@gmail.com";
 
 /* 1b) PLANILLA de pedidos (Google Sheets). Pega aquí la URL de la
        implementación de Apps Script (termina en /exec). "" = no anotar. */
-const PLANILLA = "https://script.google.com/macros/s/AKfycbxkG2xE5ROLNtTa2XQseHjTN4e09iUzZLQH5Gr5032VjY3jD9v9XRlFUvh35lcuWf7s/exec";
+const PLANILLA = "https://script.google.com/macros/s/AKfycbwVHHAfZUKAbU9K8XE2GGfJt8F0gwwi2OrQ_qieh5Gd1ux3bxRiaBmwBt4JhNz-6l9i/exec";
 
 /* 2) INSTAGRAM (opcional): pon el enlace completo o deja "" para ocultarlo */
 const INSTAGRAM = "";
@@ -580,7 +580,7 @@ function pintarPago(){
   $("#notaPago").textContent = pagaAhora()
     ? "Te llevamos a Mercado Pago para pagar con tarjeta de crédito o débito de forma segura. Después te avisamos cuando tu pedido esté listo."
     : $('input[name=pago]:checked').value === "Transferencia"
-      ? "Todavía no pagas nada. Te escribimos para confirmar disponibilidad y entrega, junto con los datos para la transferencia."
+      ? "Todavía no pagas nada. Te llegará un correo con el detalle y los datos para transferir."
       : "Todavía no pagas nada. Te escribimos para confirmar disponibilidad y entrega, junto con el link de pago.";
 }
 document.querySelectorAll('input[name=pago]').forEach(r => r.onchange = pintarPago);
@@ -643,28 +643,7 @@ $("#form").onsubmit = async e => {
       body: JSON.stringify({
         _subject: `Nuevo pedido ramita ${numero} — ${d.nombre} — ${peso(total)}`,
         _template: "box", _replyto: d.correo, _captcha: "false",
-        // Correo automático para el cliente (FormSubmit lo manda al campo «email»)
-        _autoresponse:
-`¡Hola ${d.nombre.trim().split(" ")[0]}! Gracias por tu pedido en ramita.
-
-Pedido N° ${numero}
-${detalle}
-
-${entregaTxt}
-Día: ${d.dia}${horario ? "\nHorario preferido: " + horario : ""}
-Forma de pago: ${d.pago === "Transferencia" ? "transferencia" : ahora ? "tarjeta (Mercado Pago)" : "tarjeta (link de pago)"}
-Trufas: ${peso(sub)} · ${d.entrega === "Despacho" ? "Despacho: " + (envio ? peso(envio) : "gratis") : "Retiro sin costo"}
-Total: ${peso(total)}
-
-${ahora
-  ? "Cuando se apruebe tu pago, te llegará el comprobante de Mercado Pago a tu correo. Prepararemos tus trufas a mano y te avisaremos " +
-    (d.entrega === "Despacho" ? "cuando tu pedido vaya en camino." : "cuando esté listo para retiro, junto con el punto exacto y el horario.") +
-    "\n\nSi no alcanzaste a pagar, responde este correo y te ayudamos."
-  : "Todavía no tienes que pagar nada. Te escribiremos pronto para confirmar disponibilidad y horario, junto con " + (d.pago === "Transferencia" ? "los datos para la transferencia" : "el link para pagar con tarjeta") + "."}
-
-Con cariño,
-ramita chocolates`,
-        "Gestionar pedido": linkGestion,
+        "Ver en el panel": new URL("panel.html", location.href).href.split("#")[0] + "#" + numero,
         "N° de pedido": numero,
         Nombre: d.nombre, email: d.correo, Teléfono: d.telefono || "—",
         Entrega: entregaTxt, Día: d.dia, ...(horario ? { "Horario preferido": horario } : {}),

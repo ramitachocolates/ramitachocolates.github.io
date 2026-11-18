@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pedidos · ramita</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2374492f'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='%23f5eee3' font-family='Georgia'%3Er%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{ --tinta:#2a1a12; --suave:#7a675b; --cobre:#8a4b2e; --fondo:#f7f2ea; --papel:#fbf8f3; --linea:#e3d9cb;
+         --verde:#3f6b45; --verdeF:#e6efe3; --ambar:#8a6416; --ambarF:#f6ecd6; --rojo:#9b3a2a; --rojoF:#f6e2dc; }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;min-height:100vh;background:var(--fondo);color:var(--tinta);font-family:'Instrument Sans',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  button,input,textarea{font:inherit;color:inherit}
+  .oculto{display:none!important}
+
+  header{position:sticky;top:0;z-index:5;background:var(--fondo);border-bottom:1px solid var(--linea)}
+  .barra{max-width:980px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:12px}
+  .barra h1{font-family:'DM Serif Display',Georgia,serif;font-weight:400;font-size:28px;margin:0;line-height:1;flex:1}
+  .barra h1 small{font-family:'Instrument Sans',sans-serif;font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--suave);margin-left:10px}
+  .icono{background:none;border:1px solid var(--linea);border-radius:999px;height:38px;padding:0 14px;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .icono:hover{border-color:var(--tinta)}
+  .pestanas{max-width:980px;margin:0 auto;padding:0 16px 12px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+  .pestanas::-webkit-scrollbar{display:none}
+  .pestana{flex:none;border:1px solid var(--linea);background:var(--papel);border-radius:999px;padding:7px 14px;cursor:pointer;font-size:13px;display:inline-flex;gap:8px;align-items:center}
+  .pestana b{font-weight:600;font-size:12px;background:var(--linea);border-radius:999px;padding:0 7px;min-width:22px;text-align:center}
+  .pestana[aria-selected="true"]{background:var(--tinta);color:var(--fondo);border-color:var(--tinta)}
+  .pestana[aria-selected="true"] b{background:var(--cobre);color:#fff}
+
+  main{max-width:980px;margin:0 auto;padding:20px 16px 64px}
+  .vacio{text-align:center;color:var(--suave);padding:56px 16px}
+  .vacio .serif{font-family:'DM Serif Display',serif;font-size:24px;color:var(--tinta);display:block;margin-bottom:6px}
+  .lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+
+  .tarjeta{background:var(--papel);border:1px solid var(--linea);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px;scroll-margin-top:130px}
+  .tarjeta.resaltada{outline:2px solid var(--cobre);outline-offset:2px}
+  .cab{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .cab .num{font-size:12px;letter-spacing:.12em;color:var(--suave)}
+  .cab h2{font-family:'DM Serif Display',serif;font-weight:400;font-size:22px;margin:2px 0 0;line-height:1.15}
+  .total{font-family:'DM Serif Display',serif;font-size:22px;white-space:nowrap}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:12px;border-radius:999px;padding:2px 10px;background:var(--linea)}
+  .chip.verde{background:var(--verdeF);color:var(--verde)}
+  .chip.ambar{background:var(--ambarF);color:var(--ambar)}
+  .chip.rojo{background:var(--rojoF);color:var(--rojo)}
+  .dato{font-size:14px}
+  .dato span{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--suave)}
+  .detalle{white-space:pre-line;font-size:14px;border-top:1px solid var(--linea);border-bottom:1px solid var(--linea);padding:8px 0}
+  .contacto{display:flex;gap:12px;flex-wrap:wrap;font-size:13px}
+  .contacto a{color:var(--cobre)}
+  .correos{font-size:12px;color:var(--suave);white-space:pre-line}
+  .campo{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--suave)}
+  .campo input,.campo textarea{border:1px solid var(--linea);background:#fff;border-radius:6px;padding:9px 10px;font-size:14px;width:100%}
+  .campo input:focus,.campo textarea:focus{outline:2px solid var(--cobre);outline-offset:-1px;border-color:transparent}
+  .acciones{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:4px}
+  .btn{border:1px solid var(--tinta);background:var(--tinta);color:var(--fondo);border-radius:6px;padding:10px 14px;font-size:13px;font-weight:500;cursor:pointer}
+  .btn:hover{background:#000}
+  .btn.claro{background:transparent;color:var(--tinta)}
+  .btn.claro:hover{background:var(--linea)}
+  .btn.sutil{border-color:transparent;background:transparent;color:var(--suave);padding-left:6px;padding-right:6px}
+  .btn.sutil:hover{color:var(--rojo)}
+  .btn:disabled{opacity:.5;cursor:wait}
+  .nota{font-size:13px;color:var(--suave)}
+
+  /* Ingreso */
+  .ingreso{max-width:380px;margin:12vh auto 0;padding:0 16px;text-align:center}
+  .ingreso h1{font-family:'DM Serif Display',serif;font-weight:400;font-size:44px;margin:0 0 4px}
+  .ingreso p{color:var(--suave);margin:0 0 24px}
+  .ingreso form{display:flex;flex-direction:column;gap:10px;text-align:left}
+  .error{color:var(--rojo);font-size:13px;min-height:1.2em}
+
+  /* Diálogos */
+  dialog{border:none;border-radius:12px;padding:0;width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 32px);background:var(--papel);color:var(--tinta);box-shadow:0 20px 60px rgba(42,26,18,.25)}
+  dialog::backdrop{background:rgba(42,26,18,.35)}
+  .dlg{padding:20px;display:flex;flex-direction:column;gap:12px}
+  .dlg h3{font-family:'DM Serif Display',serif;font-weight:400;font-size:24px;margin:0}
+  .dlg textarea{min-height:260px;resize:vertical;line-height:1.5}
+  .aviso{font-size:13px;background:var(--ambarF);color:var(--ambar);border-radius:6px;padding:8px 10px}
+
+  .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--tinta);color:var(--fondo);padding:10px 16px;border-radius:999px;font-size:14px;z-index:20;max-width:calc(100vw - 32px)}
+  .cargando{opacity:.55;pointer-events:none}
+  @media (max-width:520px){ .barra h1 small{display:none} .lista{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<!-- Ingreso con clave -->
+<section id="ingreso" class="ingreso oculto">
+  <h1>ramita</h1>
+  <p>Panel de pedidos</p>
+  <form id="formClave">
+    <label class="campo">Clave del panel<input id="clave" type="password" autocomplete="current-password" required></label>
+    <button class="btn" type="submit">Entrar</button>
+    <div class="error" id="errClave"></div>
+  </form>
+</section>
+
+<!-- Panel -->
+<div id="app" class="oculto">
+  <header>
+    <div class="barra">
+      <h1>Pedidos<small>ramita</small></h1>
+      <button class="icono" id="btnActualizar" title="Actualizar">↻ Actualizar</button>
+      <button class="icono" id="btnAjustes" title="Ajustes">Ajustes</button>
+    </div>
+    <nav class="pestanas" id="pestanas" role="tablist"></nav>
+  </header>
+  <main>
+    <div class="aviso oculto" id="avisoTransf">Faltan tus datos de transferencia: sin ellos no se envía el correo automático a quienes eligen transferencia. Agrégalos en <a href="#" id="irAjustes">Ajustes</a>.</div>
+    <div id="lista" class="lista" style="margin-top:12px"></div>
+    <div id="vacio" class="vacio oculto"></div>
+  </main>
+</div>
+
+<!-- Correo antes de enviar -->
+<dialog id="dlgCorreo">
+  <form method="dialog" class="dlg" id="formCorreo">
+    <h3 id="dcTitulo">Enviar correo</h3>
+    <div class="nota" id="dcPara"></div>
+    <label class="campo">Asunto<input id="dcAsunto"></label>
+    <label class="campo">Mensaje<textarea id="dcCuerpo"></textarea></label>
+    <div class="acciones">
+      <button class="btn" value="enviar" id="dcEnviar">Enviar correo</button>
+      <button class="btn claro" value="sinCorreo" id="dcSin">Cambiar estado sin correo</button>
+      <button class="btn sutil" value="cancelar" formnovalidate>Volver</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Ajustes -->
+<dialog id="dlgAjustes">
+  <form method="dialog" class="dlg">
+    <h3>Ajustes</h3>
+    <label class="campo">Datos de transferencia (van en el correo automático de quienes eligen transferencia)
+      <textarea id="ajTransf" style="min-height:140px" placeholder="Nombre&#10;RUT&#10;Banco&#10;Tipo y número de cuenta&#10;Correo"></textarea></label>
+    <div class="nota" id="ajRemitente"></div>
+    <div class="acciones">
+      <button class="btn" value="guardar">Guardar</button>
+      <button class="btn claro" value="cancelar" formnovalidate>Cerrar</button>
+      <button class="btn sutil" value="salir" formnovalidate style="margin-left:auto">Cerrar sesión en este equipo</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+// URL del script de la planilla (la misma que usa la tienda)
+const PLANILLA = "https://script.google.com/macros/s/AKfycbwVHHAfZUKAbU9K8XE2GGfJt8F0gwwi2OrQ_qieh5Gd1ux3bxRiaBmwBt4JhNz-6l9i/exec";
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const peso = n => "$" + Math.round(Number(n) || 0).toLocaleString("es-CL");
+const leer = k => { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } };
+const guardar = (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch (e) {} };
+
+let clave = leer("ramita-panel-clave");
+let pedidos = [], datosTransf = "", remitente = "", pestana = leer("ramita-panel-pestana") || "preparar";
+
+const GRUPOS = [
+  { k:"preparar",  t:"Por preparar",    estados:["Pagado"] },
+  { k:"pago",      t:"Esperando pago",  estados:["Nuevo","Confirmado"] },
+  { k:"camino",    t:"Listos / en camino", estados:["Listo para retiro","En despacho"] },
+  { k:"entregados",t:"Entregados",      estados:["Entregado"] },
+  { k:"cancelados",t:"Cancelados",      estados:["Cancelado"] },
+];
+const COLOR = { "Pagado":"verde", "Nuevo":"ambar", "Confirmado":"ambar", "Listo para retiro":"verde", "En despacho":"verde", "Entregado":"", "Cancelado":"rojo" };
+
+function toast(msg){
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 3500);
+}
+
+async function api(datos){
+  const r = await fetch(PLANILLA, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" },
+    body: JSON.stringify(Object.assign({ clave }, datos)) });
+  const j = await r.json();
+  if (!j.ok && j.error === "clave") { salir("La clave no es correcta."); throw new Error("clave"); }
+  if (!j.ok) throw new Error(j.error || "error");
+  return j;
+}
+
+// ---------- Ingreso ----------
+function salir(msg){
+  clave = ""; guardar("ramita-panel-clave", "");
+  $("#app").classList.add("oculto"); $("#ingreso").classList.remove("oculto");
+  $("#errClave").textContent = msg || "";
+  $("#clave").focus(); $("#clave").select();
+}
+$("#formClave").onsubmit = async e => {
+  e.preventDefault();
+  clave = $("#clave").value.trim();
+  const b = e.submitter || $("#formClave button"); b.disabled = true; $("#errClave").textContent = "";
+  try { await cargar(); guardar("ramita-panel-clave", clave); $("#clave").value = ""; }
+  catch (err) { if (err.message !== "clave") $("#errClave").textContent = "No se pudo conectar. Revisa tu internet e inténtalo de nuevo."; }
+  finally { b.disabled = false; }
+};
+
+// ---------- Carga y dibujo ----------
+async function cargar(){
+  $("#lista").classList.add("cargando");
+  try {
+    const j = await api({ accion:"pedidos" });
+    pedidos = j.pedidos || []; datosTransf = j.transferencia || ""; remitente = j.remitente || "";
+    $("#ingreso").classList.add("oculto"); $("#app").classList.remove("oculto");
+    dibujar();
+  } finally { $("#lista").classList.remove("cargando"); }
+}
+
+function grupoDe(p){ return (GRUPOS.find(g => g.estados.includes(p.estado)) || GRUPOS[1]).k; }
+
+function dibujar(){
+  // Si se abrió con #N° (desde el correo), ir a la pestaña de ese pedido
+  const destino = decodeURIComponent(location.hash.slice(1));
+  const objetivo = destino && pedidos.find(p => p.numero === destino);
+  if (objetivo) pestana = grupoDe(objetivo);
+
+  $("#pestanas").innerHTML = GRUPOS.map(g => {
+    const n = pedidos.filter(p => grupoDe(p) === g.k).length;
+    return `<button class="pestana" role="tab" data-k="${g.k}" aria-selected="${g.k === pestana}">${g.t}<b>${n}</b></button>`;
+  }).join("");
+  $("#pestanas").querySelectorAll(".pestana").forEach(b => b.onclick = () => {
+    pestana = b.dataset.k; guardar("ramita-panel-pestana", pestana);
+    if (location.hash) history.replaceState(null, "", location.pathname);
+    dibujar();
+  });
+
+  $("#avisoTransf").classList.toggle("oculto", !!datosTransf);
+  const lista = pedidos.filter(p => grupoDe(p) === pestana);
+  // Por preparar y en camino: los de entrega más cercana primero no se puede saber (día en texto); se muestran los más antiguos primero
+  if (pestana === "preparar" || pestana === "camino" || pestana === "pago") lista.reverse();
+
+  $("#lista").innerHTML = lista.map(tarjeta).join("");
+  const g = GRUPOS.find(x => x.k === pestana);
+  $("#vacio").innerHTML = `<span class="serif">Nada por aquí</span>No hay pedidos en «${g.t}».`;
+  $("#vacio").classList.toggle("oculto", lista.length > 0);
+  lista.forEach(p => conectar(p));
+
+  if (objetivo) {
+    const el = document.getElementById("p-" + objetivo.numero);
+    if (el) { el.classList.add("resaltada"); el.scrollIntoView({ block:"center" }); }
+  }
+}
+
+function tarjeta(p){
+  const desp = p.entrega === "Despacho";
+  const tel = p.telefono.replace(/[^\d+]/g, "");
+  const wa = tel ? "https://wa.me/" + tel.replace(/^\+/, "").replace(/^(9\d{8})$/, "56$1") : "";
+  const medio = p.medio ? `<span class="chip">${esc(p.medio)}</span>` : "";
+  let campo = "", acciones = "";
+  const id = esc(p.numero);
+
+  if (p.estado === "Pagado") {
+    campo = `<label class="campo">${desp ? "Horario aproximado de llegada (opcional)" : "Punto exacto y horario de retiro"}
+      <input data-notas="${id}" value="${esc(p.notas)}" placeholder="${desp ? "Ej.: entre 16:00 y 18:00" : "Ej.: Av. Chicureo 1234, a las 18:00"}"></label>`;
+    acciones = desp
+      ? `<button class="btn" data-acc="despacho">Marcar en despacho</button>`
+      : `<button class="btn" data-acc="listo">Marcar listo para retiro</button>`;
+  } else if (p.estado === "Nuevo" || p.estado === "Confirmado") {
+    acciones = p.medio === "Transferencia"
+      ? `<button class="btn" data-acc="pagado">Marcar pagado</button>`
+      : `<button class="btn claro" data-acc="revisar">Revisar pago en Mercado Pago</button>`;
+    acciones += `<button class="btn sutil" data-acc="cancelar">Cancelar pedido</button>`;
+  } else if (p.estado === "Listo para retiro" || p.estado === "En despacho") {
+    acciones = `<button class="btn" data-acc="entregado">Marcar entregado</button>`;
+  }
+
+  const esperando = (p.estado === "Nuevo" || p.estado === "Confirmado")
+    ? `<div class="nota">${p.medio === "Transferencia" ? "Esperando la transferencia." : "Eligió tarjeta, pero Mercado Pago aún no confirma el pago (puede que no lo haya completado). Se revisa solo cada 10 minutos."}</div>` : "";
+
+  return `<article class="tarjeta" id="p-${id}" data-n="${id}">
+    <div class="cab">
+      <div><div class="num">N° ${id} · ${esc(p.fecha)}</div><h2>${esc(p.cliente)}</h2></div>
+      <div class="total">${peso(p.total)}</div>
+    </div>
+    <div class="chips"><span class="chip ${COLOR[p.estado] || ""}">${esc(p.estado)}</span>${medio}<span class="chip">${desp ? "Despacho" : "Retiro"}</span></div>
+    <div class="dato"><span>${desp ? "Despacho" : "Retiro"}</span>${desp ? esc(p.direccion) + ", " + esc(p.lugar) : esc(p.lugar)}${desp ? ` · ${p.despacho ? peso(p.despacho) : "gratis"}` : ""}</div>
+    <div class="dato"><span>Día</span>${esc(p.dia)}</div>
+    ${p.notas && p.estado !== "Pagado" ? `<div class="dato"><span>${desp ? "Horario" : "Punto y horario"}</span>${esc(p.notas)}</div>` : ""}
+    <div class="detalle">${esc(p.detalle)}</div>
+    ${p.comentario ? `<div class="dato"><span>Comentario</span>${esc(p.comentario)}</div>` : ""}
+    <div class="contacto">${p.correo ? `<a href="mailto:${esc(p.correo)}">${esc(p.correo)}</a>` : ""}${tel ? `<a href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp ${esc(p.telefono)}</a>` : ""}</div>
+    ${p.correos ? `<div class="correos">Correos enviados:\n${esc(p.correos)}</div>` : ""}
+    ${esperando}
+    ${campo}
+    ${acciones ? `<div class="acciones">${acciones}</div>` : ""}
+  </article>`;
+}
+
+// ---------- Acciones ----------
+const ACCIONES = {
+  pagado:    { estado:"Pagado",            tipo:"recibido",  titulo:"Marcar pagado" },
+  listo:     { estado:"Listo para retiro", tipo:"listo",     titulo:"Listo para retiro" },
+  despacho:  { estado:"En despacho",       tipo:"despacho",  titulo:"En despacho" },
+  entregado: { estado:"Entregado",         tipo:"entregado", titulo:"Entregado" },
+};
+
+function conectar(p){
+  const el = document.getElementById("p-" + p.numero);
+  if (!el) return;
+  el.querySelectorAll("[data-acc]").forEach(b => b.onclick = () => accion(p, b.dataset.acc, b));
+}
+
+function reemplazar(p){
+  const i = pedidos.findIndex(x => x.numero === p.numero);
+  if (i >= 0) pedidos[i] = p;
+  dibujar();
+}
+
+async function accion(p, acc, boton){
+  const notasEl = document.querySelector(`[data-notas="${CSS.escape(p.numero)}"]`);
+  const notas = notasEl ? notasEl.value.trim() : undefined;
+
+  if (acc === "cancelar") {
+    if (!confirm(`¿Cancelar el pedido ${p.numero} de ${p.cliente}? No se le envía ningún correo.`)) return;
+    return ejecutar(boton, { accion:"cambiar", numero:p.numero, estado:"Cancelado" }, "Pedido cancelado");
+  }
+  if (acc === "revisar") {
+    boton.disabled = true;
+    try {
+      const j = await api({ accion:"revisarPago", numero:p.numero });
+      if (j.pedido) reemplazar(j.pedido);
+      toast(j.resultado === "aprobado" ? "¡Pagado! Se movió a «Por preparar» y se le envió el correo." :
+            j.resultado === "sin intentos" ? "Todavía no hay ningún intento de pago." : "Mercado Pago dice: " + j.resultado);
+    } catch (e) { if (e.message !== "clave") toast("No se pudo revisar: " + e.message); }
+    finally { boton.disabled = false; }
+    return;
+  }
+  const a = ACCIONES[acc];
+  if (acc === "listo" && !notas) {
+    if (!confirm("No escribiste el punto exacto y horario de retiro. ¿Seguir igual?")) { notasEl && notasEl.focus(); return; }
+  }
+  // Pedir el borrador del correo
+  boton.disabled = true;
+  let b;
+  try { b = await api({ accion:"borrador", numero:p.numero, tipo:a.tipo, notas }); }
+  catch (e) { if (e.message !== "clave") toast("No se pudo preparar el correo: " + e.message); return; }
+  finally { boton.disabled = false; }
+
+  $("#dcTitulo").textContent = a.titulo + " · N° " + p.numero;
+  $("#dcPara").textContent = p.correo ? "Para: " + p.cliente + " <" + p.correo + ">" : "Este pedido no tiene correo: solo se cambiará el estado.";
+  $("#dcAsunto").value = b.asunto; $("#dcCuerpo").value = b.cuerpo;
+  $("#dcEnviar").disabled = !p.correo;
+  $("#dcSin").textContent = "Marcar «" + a.estado + "» sin enviar correo";
+  const dlg = $("#dlgCorreo");
+  dlg.returnValue = "";
+  dlg.showModal();
+  dlg.onclose = () => {
+    const r = dlg.returnValue;
+    if (r !== "enviar" && r !== "sinCorreo") return;
+    const datos = { accion:"cambiar", numero:p.numero, estado:a.estado };
+    if (notas !== undefined) datos.notas = notas;
+    if (r === "enviar") Object.assign(datos, { tipo:a.tipo, asunto:$("#dcAsunto").value, cuerpo:$("#dcCuerpo").value });
+    ejecutar(boton, datos, r === "enviar" ? "Listo: estado cambiado y correo enviado" : "Estado cambiado (sin correo)");
+  };
+}
+
+async function ejecutar(boton, datos, ok){
+  const el = boton.closest(".tarjeta"); el && el.classList.add("cargando");
+  try { const j = await api(datos); location.hash && history.replaceState(null, "", location.pathname); reemplazar(j.pedido); toast(ok); }
+  catch (e) { if (e.message !== "clave") toast("No se pudo: " + e.message); }
+  finally { el && el.classList.remove("cargando"); }
+}
+
+// ---------- Ajustes ----------
+function abrirAjustes(e){
+  e && e.preventDefault();
+  $("#ajTransf").value = datosTransf;
+  $("#ajRemitente").textContent = remitente ? "Los correos salen desde: " + remitente : "";
+  const dlg = $("#dlgAjustes"); dlg.returnValue = ""; dlg.showModal();
+  dlg.onclose = async () => {
+    if (dlg.returnValue === "salir") return salir();
+    if (dlg.returnValue !== "guardar") return;
+    try { await api({ accion:"ajustes", transferencia:$("#ajTransf").value }); datosTransf = $("#ajTransf").value.trim(); dibujar(); toast("Ajustes guardados"); }
+    catch (err) { if (err.message !== "clave") toast("No se pudo guardar: " + err.message); }
+  };
+}
+$("#btnAjustes").onclick = abrirAjustes;
+$("#irAjustes").onclick = abrirAjustes;
+$("#btnActualizar").onclick = async () => { try { await cargar(); toast("Actualizado"); } catch (e) { if (e.message !== "clave") toast("No se pudo actualizar"); } };
+document.addEventListener("visibilitychange", () => { if (!document.hidden && clave) cargar().catch(() => {}); });
+
+// ---------- Inicio ----------
+if (clave) cargar().catch(e => { if (e.message !== "clave") { $("#app").classList.remove("oculto"); toast("No se pudo conectar. Toca «Actualizar»."); } });
+else salir();
+</script>
+</body>
+</html>
